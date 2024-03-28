@@ -1,6 +1,6 @@
 # Py Wikibase Rest Stainless Python API library
 
-[![PyPI version](https://img.shields.io/pypi/v/py-wikibase-rest-stainless.svg)](https://pypi.org/project/py-wikibase-rest-stainless/)
+[![PyPI version](https://img.shields.io/pypi/v/wikibase-rest-stainless.svg)](https://pypi.org/project/wikibase-rest-stainless/)
 
 The Py Wikibase Rest Stainless Python library provides convenient access to the Py Wikibase Rest Stainless REST API from any Python 3.7+
 application. The library includes type definitions for all request params and response fields,
@@ -16,7 +16,7 @@ The REST API documentation can be found [on phabricator.wikimedia.org](https://p
 
 ```sh
 # install from PyPI
-pip install --pre py-wikibase-rest-stainless
+pip install --pre wikibase-rest-stainless
 ```
 
 ## Usage
@@ -203,9 +203,9 @@ openapi = response.parse()  # get the object that `openapi.retrieve()` would hav
 print(openapi)
 ```
 
-These methods return an [`APIResponse`](https://github.com/derenrich/tree/main/src/py_wikibase_rest_stainless/_response.py) object.
+These methods return an [`APIResponse`](https://github.com/derenrich/wikibase-rest-stainless-python/tree/main/src/py_wikibase_rest_stainless/_response.py) object.
 
-The async client returns an [`AsyncAPIResponse`](https://github.com/derenrich/tree/main/src/py_wikibase_rest_stainless/_response.py) with the same structure, the only difference being `await`able methods for reading the response content.
+The async client returns an [`AsyncAPIResponse`](https://github.com/derenrich/wikibase-rest-stainless-python/tree/main/src/py_wikibase_rest_stainless/_response.py) with the same structure, the only difference being `await`able methods for reading the response content.
 
 #### `.with_streaming_response`
 
@@ -295,7 +295,7 @@ This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) con
 
 We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
 
-We are keen for your feedback; please open an [issue](https://www.github.com/derenrich/py-wikibase-rest-stainless-python/issues) with questions, bugs, or suggestions.
+We are keen for your feedback; please open an [issue](https://www.github.com/derenrich/wikibase-rest-stainless-python/issues) with questions, bugs, or suggestions.
 
 ## Requirements
 
