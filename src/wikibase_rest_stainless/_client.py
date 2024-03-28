@@ -149,6 +149,12 @@ class WikibaseRestStainless(SyncAPIClient):
 
     @property
     @override
+    def auth_headers(self) -> dict[str, str]:
+        access_token = self.access_token
+        return {"Authorization": f"Bearer {access_token}"}
+
+    @property
+    @override
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
@@ -338,6 +344,12 @@ class AsyncWikibaseRestStainless(AsyncAPIClient):
     @override
     def qs(self) -> Querystring:
         return Querystring(array_format="comma")
+
+    @property
+    @override
+    def auth_headers(self) -> dict[str, str]:
+        access_token = self.access_token
+        return {"Authorization": f"Bearer {access_token}"}
 
     @property
     @override
