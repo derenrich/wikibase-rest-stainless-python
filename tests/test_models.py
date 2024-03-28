@@ -7,9 +7,9 @@ import pytest
 import pydantic
 from pydantic import Field
 
-from py_wikibase_rest_stainless._utils import PropertyInfo
-from py_wikibase_rest_stainless._compat import PYDANTIC_V2, parse_obj, model_dump, model_json
-from py_wikibase_rest_stainless._models import BaseModel, construct_type
+from wikibase_rest_stainless._utils import PropertyInfo
+from wikibase_rest_stainless._compat import PYDANTIC_V2, parse_obj, model_dump, model_json
+from wikibase_rest_stainless._models import BaseModel, construct_type
 
 
 class BasicModel(BaseModel):

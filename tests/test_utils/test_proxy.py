@@ -2,7 +2,7 @@ import operator
 from typing import Any
 from typing_extensions import override
 
-from py_wikibase_rest_stainless._utils import LazyProxy
+from wikibase_rest_stainless._utils import LazyProxy
 
 
 class RecursiveLazyProxy(LazyProxy[Any]):

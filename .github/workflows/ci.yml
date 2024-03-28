@@ -38,4 +38,4 @@ jobs:
 
       - name: Ensure importable
         run: |
-          rye run python -c 'import py_wikibase_rest_stainless'
+          rye run python -c 'import wikibase_rest_stainless'

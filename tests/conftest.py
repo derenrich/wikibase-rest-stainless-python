@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING, Iterator, AsyncIterator
 
 import pytest
 
-from py_wikibase_rest_stainless import PyWikibaseRestStainless, AsyncPyWikibaseRestStainless
+from wikibase_rest_stainless import WikibaseRestStainless, AsyncWikibaseRestStainless
 
 if TYPE_CHECKING:
     from _pytest.fixtures import FixtureRequest
 
 pytest.register_assert_rewrite("tests.utils")
 
-logging.getLogger("py_wikibase_rest_stainless").setLevel(logging.DEBUG)
+logging.getLogger("wikibase_rest_stainless").setLevel(logging.DEBUG)
 
 
 @pytest.fixture(scope="session")
@@ -30,24 +30,24 @@ access_token = "My Access Token"
 
 
 @pytest.fixture(scope="session")
-def client(request: FixtureRequest) -> Iterator[PyWikibaseRestStainless]:
+def client(request: FixtureRequest) -> Iterator[WikibaseRestStainless]:
     strict = getattr(request, "param", True)
     if not isinstance(strict, bool):
         raise TypeError(f"Unexpected fixture parameter type {type(strict)}, expected {bool}")
 
-    with PyWikibaseRestStainless(
+    with WikibaseRestStainless(
         base_url=base_url, access_token=access_token, _strict_response_validation=strict
     ) as client:
         yield client
 
 
 @pytest.fixture(scope="session")
-async def async_client(request: FixtureRequest) -> AsyncIterator[AsyncPyWikibaseRestStainless]:
+async def async_client(request: FixtureRequest) -> AsyncIterator[AsyncWikibaseRestStainless]:
     strict = getattr(request, "param", True)
     if not isinstance(strict, bool):
         raise TypeError(f"Unexpected fixture parameter type {type(strict)}, expected {bool}")
 
-    async with AsyncPyWikibaseRestStainless(
+    async with AsyncWikibaseRestStainless(
         base_url=base_url, access_token=access_token, _strict_response_validation=strict
     ) as client:
         yield client
