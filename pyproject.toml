@@ -39,8 +39,8 @@ classifiers = [
 
 
 [project.urls]
-Homepage = "https://github.com/stainless-sdks/py-wikibase-rest-stainless-python"
-Repository = "https://github.com/stainless-sdks/py-wikibase-rest-stainless-python"
+Homepage = "https://github.com/derenrich/py-wikibase-rest-stainless-python"
+Repository = "https://github.com/derenrich/py-wikibase-rest-stainless-python"
 
 
 
