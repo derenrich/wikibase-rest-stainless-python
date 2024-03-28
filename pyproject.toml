@@ -1,5 +1,5 @@
 [project]
-name = "py-wikibase-rest-stainless"
+name = "wikibase-rest-stainless"
 version = "0.0.1-alpha.0"
 description = "The official Python library for the py-wikibase-rest-stainless API"
 readme = "README.md"
@@ -39,8 +39,8 @@ classifiers = [
 
 
 [project.urls]
-Homepage = "https://github.com/derenrich/py-wikibase-rest-stainless-python"
-Repository = "https://github.com/derenrich/py-wikibase-rest-stainless-python"
+Homepage = "https://github.com/derenrich/wikibase-rest-stainless-python"
+Repository = "https://github.com/derenrich/wikibase-rest-stainless-python"
 
 
 
