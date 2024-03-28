@@ -24,29 +24,38 @@ pip install --pre wikibase-rest-stainless
 The full API of this library can be found in [api.md](api.md).
 
 ```python
+import os
 from wikibase_rest_stainless import WikibaseRestStainless
 
 client = WikibaseRestStainless(
+    # This is the default and can be omitted
+    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),
     # defaults to "test".
     environment="production",
-    access_token="My Access Token",
 )
 
 openapi_retrieve_response = client.openapi.retrieve()
 ```
+
+While you can provide a `access_token` keyword argument,
+we recommend using [python-dotenv](https://pypi.org/project/python-dotenv/)
+to add `WIKIBASE_BEARER_TOKEN="My Access Token"` to your `.env` file
+so that your Access Token is not stored in source control.
 
 ## Async usage
 
 Simply import `AsyncWikibaseRestStainless` instead of `WikibaseRestStainless` and use `await` with each API call:
 
 ```python
+import os
 import asyncio
 from wikibase_rest_stainless import AsyncWikibaseRestStainless
 
 client = AsyncWikibaseRestStainless(
+    # This is the default and can be omitted
+    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),
     # defaults to "test".
     environment="production",
-    access_token="My Access Token",
 )
 
 
@@ -81,9 +90,7 @@ All errors inherit from `wikibase_rest_stainless.APIError`.
 import wikibase_rest_stainless
 from wikibase_rest_stainless import WikibaseRestStainless
 
-client = WikibaseRestStainless(
-    access_token="My Access Token",
-)
+client = WikibaseRestStainless()
 
 try:
     client.openapi.retrieve()
@@ -126,7 +133,6 @@ from wikibase_rest_stainless import WikibaseRestStainless
 client = WikibaseRestStainless(
     # default is 2
     max_retries=0,
-    access_token="My Access Token",
 )
 
 # Or, configure per-request:
@@ -145,13 +151,11 @@ from wikibase_rest_stainless import WikibaseRestStainless
 client = WikibaseRestStainless(
     # 20 seconds (default is 1 minute)
     timeout=20.0,
-    access_token="My Access Token",
 )
 
 # More granular control:
 client = WikibaseRestStainless(
     timeout=httpx.Timeout(60.0, read=5.0, write=10.0, connect=2.0),
-    access_token="My Access Token",
 )
 
 # Override per-request:
@@ -193,9 +197,7 @@ The "raw" Response object can be accessed by prefixing `.with_raw_response.` to 
 ```py
 from wikibase_rest_stainless import WikibaseRestStainless
 
-client = WikibaseRestStainless(
-    access_token="My Access Token",
-)
+client = WikibaseRestStainless()
 response = client.openapi.with_raw_response.retrieve()
 print(response.headers.get('X-My-Header'))
 
@@ -277,7 +279,6 @@ client = WikibaseRestStainless(
         proxies="http://my.test.proxy.example.com",
         transport=httpx.HTTPTransport(local_address="0.0.0.0"),
     ),
-    access_token="My Access Token",
 )
 ```
 

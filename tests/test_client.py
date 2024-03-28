@@ -20,7 +20,12 @@ from wikibase_rest_stainless import WikibaseRestStainless, APIResponseValidation
 from wikibase_rest_stainless._client import WikibaseRestStainless, AsyncWikibaseRestStainless
 from wikibase_rest_stainless._models import BaseModel, FinalRequestOptions
 from wikibase_rest_stainless._constants import RAW_RESPONSE_HEADER
-from wikibase_rest_stainless._exceptions import APIStatusError, APITimeoutError, APIResponseValidationError
+from wikibase_rest_stainless._exceptions import (
+    APIStatusError,
+    APITimeoutError,
+    APIResponseValidationError,
+    WikibaseRestStainlessError,
+)
 from wikibase_rest_stainless._base_client import (
     DEFAULT_TIMEOUT,
     HTTPX_DEFAULT_TIMEOUT,
@@ -334,6 +339,15 @@ class TestWikibaseRestStainless:
         request = client2._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "stainless"
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
+
+    def test_validate_headers(self) -> None:
+        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
+        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
+        assert request.headers.get("Authorization") == f"Bearer {access_token}"
+
+        with pytest.raises(WikibaseRestStainlessError):
+            client2 = WikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
+            _ = client2
 
     def test_default_query_option(self) -> None:
         client = WikibaseRestStainless(
@@ -1033,6 +1047,17 @@ class TestAsyncWikibaseRestStainless:
         request = client2._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "stainless"
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
+
+    def test_validate_headers(self) -> None:
+        client = AsyncWikibaseRestStainless(
+            base_url=base_url, access_token=access_token, _strict_response_validation=True
+        )
+        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
+        assert request.headers.get("Authorization") == f"Bearer {access_token}"
+
+        with pytest.raises(WikibaseRestStainlessError):
+            client2 = AsyncWikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
+            _ = client2
 
     def test_default_query_option(self) -> None:
         client = AsyncWikibaseRestStainless(
