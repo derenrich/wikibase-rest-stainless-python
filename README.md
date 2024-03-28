@@ -29,6 +29,7 @@ from py_wikibase_rest_stainless import PyWikibaseRestStainless
 client = PyWikibaseRestStainless(
     # defaults to "test".
     environment="production",
+    access_token="My Access Token",
 )
 
 openapi_retrieve_response = client.openapi.retrieve()
@@ -45,6 +46,7 @@ from py_wikibase_rest_stainless import AsyncPyWikibaseRestStainless
 client = AsyncPyWikibaseRestStainless(
     # defaults to "test".
     environment="production",
+    access_token="My Access Token",
 )
 
 
@@ -79,7 +81,9 @@ All errors inherit from `py_wikibase_rest_stainless.APIError`.
 import py_wikibase_rest_stainless
 from py_wikibase_rest_stainless import PyWikibaseRestStainless
 
-client = PyWikibaseRestStainless()
+client = PyWikibaseRestStainless(
+    access_token="My Access Token",
+)
 
 try:
     client.openapi.retrieve()
@@ -122,6 +126,7 @@ from py_wikibase_rest_stainless import PyWikibaseRestStainless
 client = PyWikibaseRestStainless(
     # default is 2
     max_retries=0,
+    access_token="My Access Token",
 )
 
 # Or, configure per-request:
@@ -140,11 +145,13 @@ from py_wikibase_rest_stainless import PyWikibaseRestStainless
 client = PyWikibaseRestStainless(
     # 20 seconds (default is 1 minute)
     timeout=20.0,
+    access_token="My Access Token",
 )
 
 # More granular control:
 client = PyWikibaseRestStainless(
     timeout=httpx.Timeout(60.0, read=5.0, write=10.0, connect=2.0),
+    access_token="My Access Token",
 )
 
 # Override per-request:
@@ -186,7 +193,9 @@ The "raw" Response object can be accessed by prefixing `.with_raw_response.` to 
 ```py
 from py_wikibase_rest_stainless import PyWikibaseRestStainless
 
-client = PyWikibaseRestStainless()
+client = PyWikibaseRestStainless(
+    access_token="My Access Token",
+)
 response = client.openapi.with_raw_response.retrieve()
 print(response.headers.get('X-My-Header'))
 
@@ -268,6 +277,7 @@ client = PyWikibaseRestStainless(
         proxies="http://my.test.proxy.example.com",
         transport=httpx.HTTPTransport(local_address="0.0.0.0"),
     ),
+    access_token="My Access Token",
 )
 ```
 

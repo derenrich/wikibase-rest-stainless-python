@@ -25,7 +25,7 @@ from ._utils import (
 )
 from ._version import __version__
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
-from ._exceptions import APIStatusError
+from ._exceptions import APIStatusError, PyWikibaseRestStainlessError
 from ._base_client import (
     DEFAULT_MAX_RETRIES,
     SyncAPIClient,
@@ -60,12 +60,14 @@ class PyWikibaseRestStainless(SyncAPIClient):
     with_streaming_response: PyWikibaseRestStainlessWithStreamedResponse
 
     # client options
+    access_token: str
 
     _environment: Literal["test", "production"] | NotGiven
 
     def __init__(
         self,
         *,
+        access_token: str | None = None,
         environment: Literal["test", "production"] | NotGiven = NOT_GIVEN,
         base_url: str | httpx.URL | None | NotGiven = NOT_GIVEN,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
@@ -84,7 +86,18 @@ class PyWikibaseRestStainless(SyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new synchronous py-wikibase-rest-stainless client instance."""
+        """Construct a new synchronous py-wikibase-rest-stainless client instance.
+
+        This automatically infers the `access_token` argument from the `WIKIBASE_BEARER_TOKEN` environment variable if it is not provided.
+        """
+        if access_token is None:
+            access_token = os.environ.get("WIKIBASE_BEARER_TOKEN")
+        if access_token is None:
+            raise PyWikibaseRestStainlessError(
+                "The access_token client option must be set either by passing access_token to the client or by setting the WIKIBASE_BEARER_TOKEN environment variable"
+            )
+        self.access_token = access_token
+
         self._environment = environment
 
         base_url_env = os.environ.get("PY_WIKIBASE_REST_STAINLESS_BASE_URL")
@@ -146,6 +159,7 @@ class PyWikibaseRestStainless(SyncAPIClient):
     def copy(
         self,
         *,
+        access_token: str | None = None,
         environment: Literal["test", "production"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
@@ -180,6 +194,7 @@ class PyWikibaseRestStainless(SyncAPIClient):
 
         http_client = http_client or self._client
         return self.__class__(
+            access_token=access_token or self.access_token,
             base_url=base_url or self.base_url,
             environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
@@ -237,12 +252,14 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
     with_streaming_response: AsyncPyWikibaseRestStainlessWithStreamedResponse
 
     # client options
+    access_token: str
 
     _environment: Literal["test", "production"] | NotGiven
 
     def __init__(
         self,
         *,
+        access_token: str | None = None,
         environment: Literal["test", "production"] | NotGiven = NOT_GIVEN,
         base_url: str | httpx.URL | None | NotGiven = NOT_GIVEN,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
@@ -261,7 +278,18 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new async py-wikibase-rest-stainless client instance."""
+        """Construct a new async py-wikibase-rest-stainless client instance.
+
+        This automatically infers the `access_token` argument from the `WIKIBASE_BEARER_TOKEN` environment variable if it is not provided.
+        """
+        if access_token is None:
+            access_token = os.environ.get("WIKIBASE_BEARER_TOKEN")
+        if access_token is None:
+            raise PyWikibaseRestStainlessError(
+                "The access_token client option must be set either by passing access_token to the client or by setting the WIKIBASE_BEARER_TOKEN environment variable"
+            )
+        self.access_token = access_token
+
         self._environment = environment
 
         base_url_env = os.environ.get("PY_WIKIBASE_REST_STAINLESS_BASE_URL")
@@ -323,6 +351,7 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
     def copy(
         self,
         *,
+        access_token: str | None = None,
         environment: Literal["test", "production"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
@@ -357,6 +386,7 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
 
         http_client = http_client or self._client
         return self.__class__(
+            access_token=access_token or self.access_token,
             base_url=base_url or self.base_url,
             environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,

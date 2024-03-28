@@ -26,6 +26,8 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
+access_token = "My Access Token"
+
 
 @pytest.fixture(scope="session")
 def client(request: FixtureRequest) -> Iterator[PyWikibaseRestStainless]:
@@ -33,7 +35,9 @@ def client(request: FixtureRequest) -> Iterator[PyWikibaseRestStainless]:
     if not isinstance(strict, bool):
         raise TypeError(f"Unexpected fixture parameter type {type(strict)}, expected {bool}")
 
-    with PyWikibaseRestStainless(base_url=base_url, _strict_response_validation=strict) as client:
+    with PyWikibaseRestStainless(
+        base_url=base_url, access_token=access_token, _strict_response_validation=strict
+    ) as client:
         yield client
 
 
@@ -43,5 +47,7 @@ async def async_client(request: FixtureRequest) -> AsyncIterator[AsyncPyWikibase
     if not isinstance(strict, bool):
         raise TypeError(f"Unexpected fixture parameter type {type(strict)}, expected {bool}")
 
-    async with AsyncPyWikibaseRestStainless(base_url=base_url, _strict_response_validation=strict) as client:
+    async with AsyncPyWikibaseRestStainless(
+        base_url=base_url, access_token=access_token, _strict_response_validation=strict
+    ) as client:
         yield client
