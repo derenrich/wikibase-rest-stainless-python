@@ -8,8 +8,8 @@ from typing import Any, cast
 import pytest
 
 from tests.utils import assert_matches_type
-from py_wikibase_rest_stainless import PyWikibaseRestStainless, AsyncPyWikibaseRestStainless
-from py_wikibase_rest_stainless.types import (
+from wikibase_rest_stainless import WikibaseRestStainless, AsyncWikibaseRestStainless
+from wikibase_rest_stainless.types import (
     StatementUpdateResponse,
     StatementRetrieveResponse,
 )
@@ -21,14 +21,14 @@ class TestStatements:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
     @parametrize
-    def test_method_retrieve(self, client: PyWikibaseRestStainless) -> None:
+    def test_method_retrieve(self, client: WikibaseRestStainless) -> None:
         statement = client.statements.retrieve(
             "string",
         )
         assert_matches_type(StatementRetrieveResponse, statement, path=["response"])
 
     @parametrize
-    def test_raw_response_retrieve(self, client: PyWikibaseRestStainless) -> None:
+    def test_raw_response_retrieve(self, client: WikibaseRestStainless) -> None:
         response = client.statements.with_raw_response.retrieve(
             "string",
         )
@@ -39,7 +39,7 @@ class TestStatements:
         assert_matches_type(StatementRetrieveResponse, statement, path=["response"])
 
     @parametrize
-    def test_streaming_response_retrieve(self, client: PyWikibaseRestStainless) -> None:
+    def test_streaming_response_retrieve(self, client: WikibaseRestStainless) -> None:
         with client.statements.with_streaming_response.retrieve(
             "string",
         ) as response:
@@ -52,14 +52,14 @@ class TestStatements:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    def test_path_params_retrieve(self, client: PyWikibaseRestStainless) -> None:
+    def test_path_params_retrieve(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             client.statements.with_raw_response.retrieve(
                 "",
             )
 
     @parametrize
-    def test_method_update(self, client: PyWikibaseRestStainless) -> None:
+    def test_method_update(self, client: WikibaseRestStainless) -> None:
         statement = client.statements.update(
             "string",
             patch=[
@@ -80,7 +80,7 @@ class TestStatements:
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
 
     @parametrize
-    def test_method_update_with_all_params(self, client: PyWikibaseRestStainless) -> None:
+    def test_method_update_with_all_params(self, client: WikibaseRestStainless) -> None:
         statement = client.statements.update(
             "string",
             patch=[
@@ -107,7 +107,7 @@ class TestStatements:
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
 
     @parametrize
-    def test_raw_response_update(self, client: PyWikibaseRestStainless) -> None:
+    def test_raw_response_update(self, client: WikibaseRestStainless) -> None:
         response = client.statements.with_raw_response.update(
             "string",
             patch=[
@@ -132,7 +132,7 @@ class TestStatements:
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
 
     @parametrize
-    def test_streaming_response_update(self, client: PyWikibaseRestStainless) -> None:
+    def test_streaming_response_update(self, client: WikibaseRestStainless) -> None:
         with client.statements.with_streaming_response.update(
             "string",
             patch=[
@@ -159,7 +159,7 @@ class TestStatements:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    def test_path_params_update(self, client: PyWikibaseRestStainless) -> None:
+    def test_path_params_update(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             client.statements.with_raw_response.update(
                 "",
@@ -180,14 +180,14 @@ class TestStatements:
             )
 
     @parametrize
-    def test_method_delete(self, client: PyWikibaseRestStainless) -> None:
+    def test_method_delete(self, client: WikibaseRestStainless) -> None:
         statement = client.statements.delete(
             "string",
         )
         assert_matches_type(str, statement, path=["response"])
 
     @parametrize
-    def test_method_delete_with_all_params(self, client: PyWikibaseRestStainless) -> None:
+    def test_method_delete_with_all_params(self, client: WikibaseRestStainless) -> None:
         statement = client.statements.delete(
             "string",
             bot=True,
@@ -197,7 +197,7 @@ class TestStatements:
         assert_matches_type(str, statement, path=["response"])
 
     @parametrize
-    def test_raw_response_delete(self, client: PyWikibaseRestStainless) -> None:
+    def test_raw_response_delete(self, client: WikibaseRestStainless) -> None:
         response = client.statements.with_raw_response.delete(
             "string",
         )
@@ -208,7 +208,7 @@ class TestStatements:
         assert_matches_type(str, statement, path=["response"])
 
     @parametrize
-    def test_streaming_response_delete(self, client: PyWikibaseRestStainless) -> None:
+    def test_streaming_response_delete(self, client: WikibaseRestStainless) -> None:
         with client.statements.with_streaming_response.delete(
             "string",
         ) as response:
@@ -221,7 +221,7 @@ class TestStatements:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    def test_path_params_delete(self, client: PyWikibaseRestStainless) -> None:
+    def test_path_params_delete(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             client.statements.with_raw_response.delete(
                 "",
@@ -232,14 +232,14 @@ class TestAsyncStatements:
     parametrize = pytest.mark.parametrize("async_client", [False, True], indirect=True, ids=["loose", "strict"])
 
     @parametrize
-    async def test_method_retrieve(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_method_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         statement = await async_client.statements.retrieve(
             "string",
         )
         assert_matches_type(StatementRetrieveResponse, statement, path=["response"])
 
     @parametrize
-    async def test_raw_response_retrieve(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_raw_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.statements.with_raw_response.retrieve(
             "string",
         )
@@ -250,7 +250,7 @@ class TestAsyncStatements:
         assert_matches_type(StatementRetrieveResponse, statement, path=["response"])
 
     @parametrize
-    async def test_streaming_response_retrieve(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_streaming_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.statements.with_streaming_response.retrieve(
             "string",
         ) as response:
@@ -263,14 +263,14 @@ class TestAsyncStatements:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    async def test_path_params_retrieve(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_path_params_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             await async_client.statements.with_raw_response.retrieve(
                 "",
             )
 
     @parametrize
-    async def test_method_update(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_method_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         statement = await async_client.statements.update(
             "string",
             patch=[
@@ -291,7 +291,7 @@ class TestAsyncStatements:
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
 
     @parametrize
-    async def test_method_update_with_all_params(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_method_update_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         statement = await async_client.statements.update(
             "string",
             patch=[
@@ -318,7 +318,7 @@ class TestAsyncStatements:
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
 
     @parametrize
-    async def test_raw_response_update(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_raw_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.statements.with_raw_response.update(
             "string",
             patch=[
@@ -343,7 +343,7 @@ class TestAsyncStatements:
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
 
     @parametrize
-    async def test_streaming_response_update(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_streaming_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.statements.with_streaming_response.update(
             "string",
             patch=[
@@ -370,7 +370,7 @@ class TestAsyncStatements:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    async def test_path_params_update(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_path_params_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             await async_client.statements.with_raw_response.update(
                 "",
@@ -391,14 +391,14 @@ class TestAsyncStatements:
             )
 
     @parametrize
-    async def test_method_delete(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_method_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         statement = await async_client.statements.delete(
             "string",
         )
         assert_matches_type(str, statement, path=["response"])
 
     @parametrize
-    async def test_method_delete_with_all_params(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_method_delete_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         statement = await async_client.statements.delete(
             "string",
             bot=True,
@@ -408,7 +408,7 @@ class TestAsyncStatements:
         assert_matches_type(str, statement, path=["response"])
 
     @parametrize
-    async def test_raw_response_delete(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_raw_response_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.statements.with_raw_response.delete(
             "string",
         )
@@ -419,7 +419,7 @@ class TestAsyncStatements:
         assert_matches_type(str, statement, path=["response"])
 
     @parametrize
-    async def test_streaming_response_delete(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_streaming_response_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.statements.with_streaming_response.delete(
             "string",
         ) as response:
@@ -432,7 +432,7 @@ class TestAsyncStatements:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    async def test_path_params_delete(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_path_params_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             await async_client.statements.with_raw_response.delete(
                 "",

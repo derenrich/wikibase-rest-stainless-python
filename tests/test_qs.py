@@ -4,7 +4,7 @@ from urllib.parse import unquote
 
 import pytest
 
-from py_wikibase_rest_stainless._qs import Querystring, stringify
+from wikibase_rest_stainless._qs import Querystring, stringify
 
 
 def test_empty() -> None:

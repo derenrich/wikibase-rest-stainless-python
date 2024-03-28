@@ -1,11 +1,11 @@
 [project]
 name = "wikibase-rest-stainless"
 version = "0.0.1-alpha.0"
-description = "The official Python library for the py-wikibase-rest-stainless API"
+description = "The official Python library for the wikibase-rest-stainless API"
 readme = "README.md"
 license = "Apache-2.0"
 authors = [
-{ name = "Py Wikibase Rest Stainless", email = "dev-feedback@py-wikibase-rest-stainless.com" },
+{ name = "Wikibase Rest Stainless", email = "dev-feedback@py-wikibase-rest-stainless.com" },
 ]
 dependencies = [
     "httpx>=0.23.0, <1",
@@ -84,7 +84,7 @@ typecheck = { chain = [
   "typecheck:mypy"
 ]}
 "typecheck:pyright" = "pyright"
-"typecheck:verify-types" = "pyright --verifytypes py_wikibase_rest_stainless --ignoreexternal"
+"typecheck:verify-types" = "pyright --verifytypes wikibase_rest_stainless --ignoreexternal"
 "typecheck:mypy" = "mypy ."
 
 [build-system]
@@ -97,7 +97,7 @@ include = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/py_wikibase_rest_stainless"]
+packages = ["src/wikibase_rest_stainless"]
 
 [tool.black]
 line-length = 120
@@ -171,7 +171,7 @@ length-sort = true
 length-sort-straight = true
 combine-as-imports = true
 extra-standard-library = ["typing_extensions"]
-known-first-party = ["py_wikibase_rest_stainless", "tests"]
+known-first-party = ["wikibase_rest_stainless", "tests"]
 
 [tool.ruff.per-file-ignores]
 "bin/**.py" = ["T201", "T203"]
