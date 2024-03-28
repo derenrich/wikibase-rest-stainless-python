@@ -26,7 +26,10 @@ The full API of this library can be found in [api.md](api.md).
 ```python
 from py_wikibase_rest_stainless import PyWikibaseRestStainless
 
-client = PyWikibaseRestStainless()
+client = PyWikibaseRestStainless(
+    # defaults to "test".
+    environment="production",
+)
 
 openapi_retrieve_response = client.openapi.retrieve()
 ```
@@ -39,7 +42,10 @@ Simply import `AsyncPyWikibaseRestStainless` instead of `PyWikibaseRestStainless
 import asyncio
 from py_wikibase_rest_stainless import AsyncPyWikibaseRestStainless
 
-client = AsyncPyWikibaseRestStainless()
+client = AsyncPyWikibaseRestStainless(
+    # defaults to "test".
+    environment="production",
+)
 
 
 async def main() -> None:

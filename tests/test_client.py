@@ -532,6 +532,14 @@ class TestPyWikibaseRestStainless:
             client = PyWikibaseRestStainless(_strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
 
+        # explicit environment arg requires explicitness
+        with update_env(PY_WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
+            with pytest.raises(ValueError, match=r"you must pass base_url=None"):
+                PyWikibaseRestStainless(_strict_response_validation=True, environment="test")
+
+            client = PyWikibaseRestStainless(base_url=None, _strict_response_validation=True, environment="test")
+            assert str(client.base_url).startswith("https://test.wikidata.org/w/rest.php/wikibase/v0")
+
     @pytest.mark.parametrize(
         "client",
         [
@@ -1186,6 +1194,14 @@ class TestAsyncPyWikibaseRestStainless:
         with update_env(PY_WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
             client = AsyncPyWikibaseRestStainless(_strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
+
+        # explicit environment arg requires explicitness
+        with update_env(PY_WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
+            with pytest.raises(ValueError, match=r"you must pass base_url=None"):
+                AsyncPyWikibaseRestStainless(_strict_response_validation=True, environment="test")
+
+            client = AsyncPyWikibaseRestStainless(base_url=None, _strict_response_validation=True, environment="test")
+            assert str(client.base_url).startswith("https://test.wikidata.org/w/rest.php/wikibase/v0")
 
     @pytest.mark.parametrize(
         "client",

@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Union, Mapping
-from typing_extensions import Self, override
+from typing import Any, Dict, Union, Mapping, cast
+from typing_extensions import Self, Literal, override
 
 import httpx
 
@@ -33,6 +33,7 @@ from ._base_client import (
 )
 
 __all__ = [
+    "ENVIRONMENTS",
     "Timeout",
     "Transport",
     "ProxiesTypes",
@@ -43,6 +44,11 @@ __all__ = [
     "Client",
     "AsyncClient",
 ]
+
+ENVIRONMENTS: Dict[str, str] = {
+    "test": "https://test.wikidata.org/w/rest.php/wikibase/v0",
+    "production": "https://wikidata.org/w/rest.php/wikibase/v0",
+}
 
 
 class PyWikibaseRestStainless(SyncAPIClient):
@@ -55,10 +61,13 @@ class PyWikibaseRestStainless(SyncAPIClient):
 
     # client options
 
+    _environment: Literal["test", "production"] | NotGiven
+
     def __init__(
         self,
         *,
-        base_url: str | httpx.URL | None = None,
+        environment: Literal["test", "production"] | NotGiven = NOT_GIVEN,
+        base_url: str | httpx.URL | None | NotGiven = NOT_GIVEN,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
         max_retries: int = DEFAULT_MAX_RETRIES,
         default_headers: Mapping[str, str] | None = None,
@@ -76,10 +85,31 @@ class PyWikibaseRestStainless(SyncAPIClient):
         _strict_response_validation: bool = False,
     ) -> None:
         """Construct a new synchronous py-wikibase-rest-stainless client instance."""
-        if base_url is None:
-            base_url = os.environ.get("PY_WIKIBASE_REST_STAINLESS_BASE_URL")
-        if base_url is None:
-            base_url = f"https://wikibase.example/w/rest.php/wikibase/v0"
+        self._environment = environment
+
+        base_url_env = os.environ.get("PY_WIKIBASE_REST_STAINLESS_BASE_URL")
+        if is_given(base_url) and base_url is not None:
+            # cast required because mypy doesn't understand the type narrowing
+            base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
+        elif is_given(environment):
+            if base_url_env and base_url is not None:
+                raise ValueError(
+                    "Ambiguous URL; The `PY_WIKIBASE_REST_STAINLESS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
+                )
+
+            try:
+                base_url = ENVIRONMENTS[environment]
+            except KeyError as exc:
+                raise ValueError(f"Unknown environment: {environment}") from exc
+        elif base_url_env is not None:
+            base_url = base_url_env
+        else:
+            self._environment = environment = "test"
+
+            try:
+                base_url = ENVIRONMENTS[environment]
+            except KeyError as exc:
+                raise ValueError(f"Unknown environment: {environment}") from exc
 
         super().__init__(
             version=__version__,
@@ -116,6 +146,7 @@ class PyWikibaseRestStainless(SyncAPIClient):
     def copy(
         self,
         *,
+        environment: Literal["test", "production"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
         http_client: httpx.Client | None = None,
@@ -150,6 +181,7 @@ class PyWikibaseRestStainless(SyncAPIClient):
         http_client = http_client or self._client
         return self.__class__(
             base_url=base_url or self.base_url,
+            environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
             http_client=http_client,
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
@@ -206,10 +238,13 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
 
     # client options
 
+    _environment: Literal["test", "production"] | NotGiven
+
     def __init__(
         self,
         *,
-        base_url: str | httpx.URL | None = None,
+        environment: Literal["test", "production"] | NotGiven = NOT_GIVEN,
+        base_url: str | httpx.URL | None | NotGiven = NOT_GIVEN,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
         max_retries: int = DEFAULT_MAX_RETRIES,
         default_headers: Mapping[str, str] | None = None,
@@ -227,10 +262,31 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
         _strict_response_validation: bool = False,
     ) -> None:
         """Construct a new async py-wikibase-rest-stainless client instance."""
-        if base_url is None:
-            base_url = os.environ.get("PY_WIKIBASE_REST_STAINLESS_BASE_URL")
-        if base_url is None:
-            base_url = f"https://wikibase.example/w/rest.php/wikibase/v0"
+        self._environment = environment
+
+        base_url_env = os.environ.get("PY_WIKIBASE_REST_STAINLESS_BASE_URL")
+        if is_given(base_url) and base_url is not None:
+            # cast required because mypy doesn't understand the type narrowing
+            base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
+        elif is_given(environment):
+            if base_url_env and base_url is not None:
+                raise ValueError(
+                    "Ambiguous URL; The `PY_WIKIBASE_REST_STAINLESS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
+                )
+
+            try:
+                base_url = ENVIRONMENTS[environment]
+            except KeyError as exc:
+                raise ValueError(f"Unknown environment: {environment}") from exc
+        elif base_url_env is not None:
+            base_url = base_url_env
+        else:
+            self._environment = environment = "test"
+
+            try:
+                base_url = ENVIRONMENTS[environment]
+            except KeyError as exc:
+                raise ValueError(f"Unknown environment: {environment}") from exc
 
         super().__init__(
             version=__version__,
@@ -267,6 +323,7 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
     def copy(
         self,
         *,
+        environment: Literal["test", "production"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
         http_client: httpx.AsyncClient | None = None,
@@ -301,6 +358,7 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
         http_client = http_client or self._client
         return self.__class__(
             base_url=base_url or self.base_url,
+            environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
             http_client=http_client,
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
