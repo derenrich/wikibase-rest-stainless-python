@@ -25,7 +25,7 @@ from ._utils import (
 )
 from ._version import __version__
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
-from ._exceptions import APIStatusError, PyWikibaseRestStainlessError
+from ._exceptions import APIStatusError, WikibaseRestStainlessError
 from ._base_client import (
     DEFAULT_MAX_RETRIES,
     SyncAPIClient,
@@ -39,8 +39,8 @@ __all__ = [
     "ProxiesTypes",
     "RequestOptions",
     "resources",
-    "PyWikibaseRestStainless",
-    "AsyncPyWikibaseRestStainless",
+    "WikibaseRestStainless",
+    "AsyncWikibaseRestStainless",
     "Client",
     "AsyncClient",
 ]
@@ -51,13 +51,13 @@ ENVIRONMENTS: Dict[str, str] = {
 }
 
 
-class PyWikibaseRestStainless(SyncAPIClient):
+class WikibaseRestStainless(SyncAPIClient):
     openapi: resources.Openapi
     property_data_types: resources.PropertyDataTypes
     entities: resources.Entities
     statements: resources.Statements
-    with_raw_response: PyWikibaseRestStainlessWithRawResponse
-    with_streaming_response: PyWikibaseRestStainlessWithStreamedResponse
+    with_raw_response: WikibaseRestStainlessWithRawResponse
+    with_streaming_response: WikibaseRestStainlessWithStreamedResponse
 
     # client options
     access_token: str
@@ -86,28 +86,28 @@ class PyWikibaseRestStainless(SyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new synchronous py-wikibase-rest-stainless client instance.
+        """Construct a new synchronous wikibase-rest-stainless client instance.
 
         This automatically infers the `access_token` argument from the `WIKIBASE_BEARER_TOKEN` environment variable if it is not provided.
         """
         if access_token is None:
             access_token = os.environ.get("WIKIBASE_BEARER_TOKEN")
         if access_token is None:
-            raise PyWikibaseRestStainlessError(
+            raise WikibaseRestStainlessError(
                 "The access_token client option must be set either by passing access_token to the client or by setting the WIKIBASE_BEARER_TOKEN environment variable"
             )
         self.access_token = access_token
 
         self._environment = environment
 
-        base_url_env = os.environ.get("PY_WIKIBASE_REST_STAINLESS_BASE_URL")
+        base_url_env = os.environ.get("WIKIBASE_REST_STAINLESS_BASE_URL")
         if is_given(base_url) and base_url is not None:
             # cast required because mypy doesn't understand the type narrowing
             base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
         elif is_given(environment):
             if base_url_env and base_url is not None:
                 raise ValueError(
-                    "Ambiguous URL; The `PY_WIKIBASE_REST_STAINLESS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
+                    "Ambiguous URL; The `WIKIBASE_REST_STAINLESS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
                 )
 
             try:
@@ -139,13 +139,19 @@ class PyWikibaseRestStainless(SyncAPIClient):
         self.property_data_types = resources.PropertyDataTypes(self)
         self.entities = resources.Entities(self)
         self.statements = resources.Statements(self)
-        self.with_raw_response = PyWikibaseRestStainlessWithRawResponse(self)
-        self.with_streaming_response = PyWikibaseRestStainlessWithStreamedResponse(self)
+        self.with_raw_response = WikibaseRestStainlessWithRawResponse(self)
+        self.with_streaming_response = WikibaseRestStainlessWithStreamedResponse(self)
 
     @property
     @override
     def qs(self) -> Querystring:
         return Querystring(array_format="comma")
+
+    @property
+    @override
+    def auth_headers(self) -> dict[str, str]:
+        access_token = self.access_token
+        return {"Authorization": f"Bearer {access_token}"}
 
     @property
     @override
@@ -243,13 +249,13 @@ class PyWikibaseRestStainless(SyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class AsyncPyWikibaseRestStainless(AsyncAPIClient):
+class AsyncWikibaseRestStainless(AsyncAPIClient):
     openapi: resources.AsyncOpenapi
     property_data_types: resources.AsyncPropertyDataTypes
     entities: resources.AsyncEntities
     statements: resources.AsyncStatements
-    with_raw_response: AsyncPyWikibaseRestStainlessWithRawResponse
-    with_streaming_response: AsyncPyWikibaseRestStainlessWithStreamedResponse
+    with_raw_response: AsyncWikibaseRestStainlessWithRawResponse
+    with_streaming_response: AsyncWikibaseRestStainlessWithStreamedResponse
 
     # client options
     access_token: str
@@ -278,28 +284,28 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new async py-wikibase-rest-stainless client instance.
+        """Construct a new async wikibase-rest-stainless client instance.
 
         This automatically infers the `access_token` argument from the `WIKIBASE_BEARER_TOKEN` environment variable if it is not provided.
         """
         if access_token is None:
             access_token = os.environ.get("WIKIBASE_BEARER_TOKEN")
         if access_token is None:
-            raise PyWikibaseRestStainlessError(
+            raise WikibaseRestStainlessError(
                 "The access_token client option must be set either by passing access_token to the client or by setting the WIKIBASE_BEARER_TOKEN environment variable"
             )
         self.access_token = access_token
 
         self._environment = environment
 
-        base_url_env = os.environ.get("PY_WIKIBASE_REST_STAINLESS_BASE_URL")
+        base_url_env = os.environ.get("WIKIBASE_REST_STAINLESS_BASE_URL")
         if is_given(base_url) and base_url is not None:
             # cast required because mypy doesn't understand the type narrowing
             base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
         elif is_given(environment):
             if base_url_env and base_url is not None:
                 raise ValueError(
-                    "Ambiguous URL; The `PY_WIKIBASE_REST_STAINLESS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
+                    "Ambiguous URL; The `WIKIBASE_REST_STAINLESS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
                 )
 
             try:
@@ -331,13 +337,19 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
         self.property_data_types = resources.AsyncPropertyDataTypes(self)
         self.entities = resources.AsyncEntities(self)
         self.statements = resources.AsyncStatements(self)
-        self.with_raw_response = AsyncPyWikibaseRestStainlessWithRawResponse(self)
-        self.with_streaming_response = AsyncPyWikibaseRestStainlessWithStreamedResponse(self)
+        self.with_raw_response = AsyncWikibaseRestStainlessWithRawResponse(self)
+        self.with_streaming_response = AsyncWikibaseRestStainlessWithStreamedResponse(self)
 
     @property
     @override
     def qs(self) -> Querystring:
         return Querystring(array_format="comma")
+
+    @property
+    @override
+    def auth_headers(self) -> dict[str, str]:
+        access_token = self.access_token
+        return {"Authorization": f"Bearer {access_token}"}
 
     @property
     @override
@@ -435,38 +447,38 @@ class AsyncPyWikibaseRestStainless(AsyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class PyWikibaseRestStainlessWithRawResponse:
-    def __init__(self, client: PyWikibaseRestStainless) -> None:
+class WikibaseRestStainlessWithRawResponse:
+    def __init__(self, client: WikibaseRestStainless) -> None:
         self.openapi = resources.OpenapiWithRawResponse(client.openapi)
         self.property_data_types = resources.PropertyDataTypesWithRawResponse(client.property_data_types)
         self.entities = resources.EntitiesWithRawResponse(client.entities)
         self.statements = resources.StatementsWithRawResponse(client.statements)
 
 
-class AsyncPyWikibaseRestStainlessWithRawResponse:
-    def __init__(self, client: AsyncPyWikibaseRestStainless) -> None:
+class AsyncWikibaseRestStainlessWithRawResponse:
+    def __init__(self, client: AsyncWikibaseRestStainless) -> None:
         self.openapi = resources.AsyncOpenapiWithRawResponse(client.openapi)
         self.property_data_types = resources.AsyncPropertyDataTypesWithRawResponse(client.property_data_types)
         self.entities = resources.AsyncEntitiesWithRawResponse(client.entities)
         self.statements = resources.AsyncStatementsWithRawResponse(client.statements)
 
 
-class PyWikibaseRestStainlessWithStreamedResponse:
-    def __init__(self, client: PyWikibaseRestStainless) -> None:
+class WikibaseRestStainlessWithStreamedResponse:
+    def __init__(self, client: WikibaseRestStainless) -> None:
         self.openapi = resources.OpenapiWithStreamingResponse(client.openapi)
         self.property_data_types = resources.PropertyDataTypesWithStreamingResponse(client.property_data_types)
         self.entities = resources.EntitiesWithStreamingResponse(client.entities)
         self.statements = resources.StatementsWithStreamingResponse(client.statements)
 
 
-class AsyncPyWikibaseRestStainlessWithStreamedResponse:
-    def __init__(self, client: AsyncPyWikibaseRestStainless) -> None:
+class AsyncWikibaseRestStainlessWithStreamedResponse:
+    def __init__(self, client: AsyncWikibaseRestStainless) -> None:
         self.openapi = resources.AsyncOpenapiWithStreamingResponse(client.openapi)
         self.property_data_types = resources.AsyncPropertyDataTypesWithStreamingResponse(client.property_data_types)
         self.entities = resources.AsyncEntitiesWithStreamingResponse(client.entities)
         self.statements = resources.AsyncStatementsWithStreamingResponse(client.statements)
 
 
-Client = PyWikibaseRestStainless
+Client = WikibaseRestStainless
 
-AsyncClient = AsyncPyWikibaseRestStainless
+AsyncClient = AsyncWikibaseRestStainless

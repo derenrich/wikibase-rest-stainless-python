@@ -4,8 +4,8 @@ from typing import Sequence
 
 import pytest
 
-from py_wikibase_rest_stainless._types import FileTypes
-from py_wikibase_rest_stainless._utils import extract_files
+from wikibase_rest_stainless._types import FileTypes
+from wikibase_rest_stainless._utils import extract_files
 
 
 def test_removes_files_from_input() -> None:

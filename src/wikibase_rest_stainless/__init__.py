@@ -12,8 +12,8 @@ from ._client import (
     AsyncClient,
     AsyncStream,
     RequestOptions,
-    PyWikibaseRestStainless,
-    AsyncPyWikibaseRestStainless,
+    WikibaseRestStainless,
+    AsyncWikibaseRestStainless,
 )
 from ._models import BaseModel
 from ._version import __title__, __version__
@@ -33,7 +33,7 @@ from ._exceptions import (
     PermissionDeniedError,
     UnprocessableEntityError,
     APIResponseValidationError,
-    PyWikibaseRestStainlessError,
+    WikibaseRestStainlessError,
 )
 from ._utils._logs import setup_logging as _setup_logging
 
@@ -46,7 +46,7 @@ __all__ = [
     "ProxiesTypes",
     "NotGiven",
     "NOT_GIVEN",
-    "PyWikibaseRestStainlessError",
+    "WikibaseRestStainlessError",
     "APIError",
     "APIStatusError",
     "APITimeoutError",
@@ -66,8 +66,8 @@ __all__ = [
     "AsyncClient",
     "Stream",
     "AsyncStream",
-    "PyWikibaseRestStainless",
-    "AsyncPyWikibaseRestStainless",
+    "WikibaseRestStainless",
+    "AsyncWikibaseRestStainless",
     "ENVIRONMENTS",
     "file_from_path",
     "BaseModel",
@@ -81,12 +81,12 @@ _setup_logging()
 # Update the __module__ attribute for exported symbols so that
 # error messages point to this module instead of the module
 # it was originally defined in, e.g.
-# py_wikibase_rest_stainless._exceptions.NotFoundError -> py_wikibase_rest_stainless.NotFoundError
+# wikibase_rest_stainless._exceptions.NotFoundError -> wikibase_rest_stainless.NotFoundError
 __locals = locals()
 for __name in __all__:
     if not __name.startswith("__"):
         try:
-            __locals[__name].__module__ = "py_wikibase_rest_stainless"
+            __locals[__name].__module__ = "wikibase_rest_stainless"
         except (TypeError, AttributeError):
             # Some of our exported symbols are builtins which we can't set attributes for.
             pass

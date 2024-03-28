@@ -2,7 +2,7 @@ from typing import Iterator, AsyncIterator
 
 import pytest
 
-from py_wikibase_rest_stainless._streaming import SSEDecoder
+from wikibase_rest_stainless._streaming import SSEDecoder
 
 
 @pytest.mark.asyncio

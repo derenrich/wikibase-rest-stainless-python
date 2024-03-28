@@ -8,13 +8,13 @@ from typing import TYPE_CHECKING
 import anyio
 
 if TYPE_CHECKING:
-    from ._client import PyWikibaseRestStainless, AsyncPyWikibaseRestStainless
+    from ._client import WikibaseRestStainless, AsyncWikibaseRestStainless
 
 
 class SyncAPIResource:
-    _client: PyWikibaseRestStainless
+    _client: WikibaseRestStainless
 
-    def __init__(self, client: PyWikibaseRestStainless) -> None:
+    def __init__(self, client: WikibaseRestStainless) -> None:
         self._client = client
         self._get = client.get
         self._post = client.post
@@ -28,9 +28,9 @@ class SyncAPIResource:
 
 
 class AsyncAPIResource:
-    _client: AsyncPyWikibaseRestStainless
+    _client: AsyncWikibaseRestStainless
 
-    def __init__(self, client: AsyncPyWikibaseRestStainless) -> None:
+    def __init__(self, client: AsyncWikibaseRestStainless) -> None:
         self._client = client
         self._get = client.get
         self._post = client.post

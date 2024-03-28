@@ -8,8 +8,8 @@ from typing import Any, cast
 import pytest
 
 from tests.utils import assert_matches_type
-from py_wikibase_rest_stainless import PyWikibaseRestStainless, AsyncPyWikibaseRestStainless
-from py_wikibase_rest_stainless.types.entities import (
+from wikibase_rest_stainless import WikibaseRestStainless, AsyncWikibaseRestStainless
+from wikibase_rest_stainless.types.entities import (
     ItemCreateResponse,
     ItemRetrieveResponse,
 )
@@ -21,14 +21,14 @@ class TestItems:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
     @parametrize
-    def test_method_create(self, client: PyWikibaseRestStainless) -> None:
+    def test_method_create(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.create(
             item={},
         )
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
     @parametrize
-    def test_method_create_with_all_params(self, client: PyWikibaseRestStainless) -> None:
+    def test_method_create_with_all_params(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.create(
             item={
                 "labels": {
@@ -175,7 +175,7 @@ class TestItems:
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
     @parametrize
-    def test_raw_response_create(self, client: PyWikibaseRestStainless) -> None:
+    def test_raw_response_create(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.with_raw_response.create(
             item={},
         )
@@ -186,7 +186,7 @@ class TestItems:
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
     @parametrize
-    def test_streaming_response_create(self, client: PyWikibaseRestStainless) -> None:
+    def test_streaming_response_create(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.with_streaming_response.create(
             item={},
         ) as response:
@@ -199,14 +199,14 @@ class TestItems:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    def test_method_retrieve(self, client: PyWikibaseRestStainless) -> None:
+    def test_method_retrieve(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.retrieve(
             "string",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
-    def test_method_retrieve_with_all_params(self, client: PyWikibaseRestStainless) -> None:
+    def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.retrieve(
             "string",
             _fields=["type", "labels", "descriptions"],
@@ -214,7 +214,7 @@ class TestItems:
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
-    def test_raw_response_retrieve(self, client: PyWikibaseRestStainless) -> None:
+    def test_raw_response_retrieve(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.with_raw_response.retrieve(
             "string",
         )
@@ -225,7 +225,7 @@ class TestItems:
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
-    def test_streaming_response_retrieve(self, client: PyWikibaseRestStainless) -> None:
+    def test_streaming_response_retrieve(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.with_streaming_response.retrieve(
             "string",
         ) as response:
@@ -238,7 +238,7 @@ class TestItems:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    def test_path_params_retrieve(self, client: PyWikibaseRestStainless) -> None:
+    def test_path_params_retrieve(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             client.entities.items.with_raw_response.retrieve(
                 "",
@@ -249,14 +249,14 @@ class TestAsyncItems:
     parametrize = pytest.mark.parametrize("async_client", [False, True], indirect=True, ids=["loose", "strict"])
 
     @parametrize
-    async def test_method_create(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_method_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.create(
             item={},
         )
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
     @parametrize
-    async def test_method_create_with_all_params(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_method_create_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.create(
             item={
                 "labels": {
@@ -403,7 +403,7 @@ class TestAsyncItems:
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
     @parametrize
-    async def test_raw_response_create(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_raw_response_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.with_raw_response.create(
             item={},
         )
@@ -414,7 +414,7 @@ class TestAsyncItems:
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
     @parametrize
-    async def test_streaming_response_create(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_streaming_response_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.with_streaming_response.create(
             item={},
         ) as response:
@@ -427,14 +427,14 @@ class TestAsyncItems:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    async def test_method_retrieve(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_method_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.retrieve(
             "string",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
-    async def test_method_retrieve_with_all_params(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.retrieve(
             "string",
             _fields=["type", "labels", "descriptions"],
@@ -442,7 +442,7 @@ class TestAsyncItems:
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
-    async def test_raw_response_retrieve(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_raw_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.with_raw_response.retrieve(
             "string",
         )
@@ -453,7 +453,7 @@ class TestAsyncItems:
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
-    async def test_streaming_response_retrieve(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_streaming_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.with_streaming_response.retrieve(
             "string",
         ) as response:
@@ -466,7 +466,7 @@ class TestAsyncItems:
         assert cast(Any, response.is_closed) is True
 
     @parametrize
-    async def test_path_params_retrieve(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    async def test_path_params_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             await async_client.entities.items.with_raw_response.retrieve(
                 "",

@@ -18,11 +18,11 @@ __all__ = [
 ]
 
 
-class PyWikibaseRestStainlessError(Exception):
+class WikibaseRestStainlessError(Exception):
     pass
 
 
-class APIError(PyWikibaseRestStainlessError):
+class APIError(WikibaseRestStainlessError):
     message: str
     request: httpx.Request
 

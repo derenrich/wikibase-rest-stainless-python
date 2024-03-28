@@ -16,12 +16,17 @@ import pytest
 from respx import MockRouter
 from pydantic import ValidationError
 
-from py_wikibase_rest_stainless import PyWikibaseRestStainless, APIResponseValidationError, AsyncPyWikibaseRestStainless
-from py_wikibase_rest_stainless._client import PyWikibaseRestStainless, AsyncPyWikibaseRestStainless
-from py_wikibase_rest_stainless._models import BaseModel, FinalRequestOptions
-from py_wikibase_rest_stainless._constants import RAW_RESPONSE_HEADER
-from py_wikibase_rest_stainless._exceptions import APIStatusError, APITimeoutError, APIResponseValidationError
-from py_wikibase_rest_stainless._base_client import (
+from wikibase_rest_stainless import WikibaseRestStainless, APIResponseValidationError, AsyncWikibaseRestStainless
+from wikibase_rest_stainless._client import WikibaseRestStainless, AsyncWikibaseRestStainless
+from wikibase_rest_stainless._models import BaseModel, FinalRequestOptions
+from wikibase_rest_stainless._constants import RAW_RESPONSE_HEADER
+from wikibase_rest_stainless._exceptions import (
+    APIStatusError,
+    APITimeoutError,
+    APIResponseValidationError,
+    WikibaseRestStainlessError,
+)
+from wikibase_rest_stainless._base_client import (
     DEFAULT_TIMEOUT,
     HTTPX_DEFAULT_TIMEOUT,
     BaseClient,
@@ -44,7 +49,7 @@ def _low_retry_timeout(*_args: Any, **_kwargs: Any) -> float:
     return 0.1
 
 
-def _get_open_connections(client: PyWikibaseRestStainless | AsyncPyWikibaseRestStainless) -> int:
+def _get_open_connections(client: WikibaseRestStainless | AsyncWikibaseRestStainless) -> int:
     transport = client._client._transport
     assert isinstance(transport, httpx.HTTPTransport) or isinstance(transport, httpx.AsyncHTTPTransport)
 
@@ -52,8 +57,8 @@ def _get_open_connections(client: PyWikibaseRestStainless | AsyncPyWikibaseRestS
     return len(pool._requests)
 
 
-class TestPyWikibaseRestStainless:
-    client = PyWikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
+class TestWikibaseRestStainless:
+    client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
 
     @pytest.mark.respx(base_url=base_url)
     def test_raw_response(self, respx_mock: MockRouter) -> None:
@@ -100,7 +105,7 @@ class TestPyWikibaseRestStainless:
         assert isinstance(self.client.timeout, httpx.Timeout)
 
     def test_copy_default_headers(self) -> None:
-        client = PyWikibaseRestStainless(
+        client = WikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -137,7 +142,7 @@ class TestPyWikibaseRestStainless:
             client.copy(set_default_headers={}, default_headers={"X-Foo": "Bar"})
 
     def test_copy_default_query(self) -> None:
-        client = PyWikibaseRestStainless(
+        client = WikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True, default_query={"foo": "bar"}
         )
         assert _get_params(client)["foo"] == "bar"
@@ -228,10 +233,10 @@ class TestPyWikibaseRestStainless:
                         # to_raw_response_wrapper leaks through the @functools.wraps() decorator.
                         #
                         # removing the decorator fixes the leak for reasons we don't understand.
-                        "py_wikibase_rest_stainless/_legacy_response.py",
-                        "py_wikibase_rest_stainless/_response.py",
+                        "wikibase_rest_stainless/_legacy_response.py",
+                        "wikibase_rest_stainless/_response.py",
                         # pydantic.BaseModel.model_dump || pydantic.BaseModel.dict leak memory for some reason.
-                        "py_wikibase_rest_stainless/_compat.py",
+                        "wikibase_rest_stainless/_compat.py",
                         # Standard library leaks we don't care about.
                         "/logging/__init__.py",
                     ]
@@ -262,7 +267,7 @@ class TestPyWikibaseRestStainless:
         assert timeout == httpx.Timeout(100.0)
 
     def test_client_timeout_option(self) -> None:
-        client = PyWikibaseRestStainless(
+        client = WikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True, timeout=httpx.Timeout(0)
         )
 
@@ -273,7 +278,7 @@ class TestPyWikibaseRestStainless:
     def test_http_client_timeout_option(self) -> None:
         # custom timeout given to the httpx client should be used
         with httpx.Client(timeout=None) as http_client:
-            client = PyWikibaseRestStainless(
+            client = WikibaseRestStainless(
                 base_url=base_url, access_token=access_token, _strict_response_validation=True, http_client=http_client
             )
 
@@ -283,7 +288,7 @@ class TestPyWikibaseRestStainless:
 
         # no timeout given to the httpx client should not use the httpx default
         with httpx.Client() as http_client:
-            client = PyWikibaseRestStainless(
+            client = WikibaseRestStainless(
                 base_url=base_url, access_token=access_token, _strict_response_validation=True, http_client=http_client
             )
 
@@ -293,7 +298,7 @@ class TestPyWikibaseRestStainless:
 
         # explicitly passing the default timeout currently results in it being ignored
         with httpx.Client(timeout=HTTPX_DEFAULT_TIMEOUT) as http_client:
-            client = PyWikibaseRestStainless(
+            client = WikibaseRestStainless(
                 base_url=base_url, access_token=access_token, _strict_response_validation=True, http_client=http_client
             )
 
@@ -304,7 +309,7 @@ class TestPyWikibaseRestStainless:
     async def test_invalid_http_client(self) -> None:
         with pytest.raises(TypeError, match="Invalid `http_client` arg"):
             async with httpx.AsyncClient() as http_client:
-                PyWikibaseRestStainless(
+                WikibaseRestStainless(
                     base_url=base_url,
                     access_token=access_token,
                     _strict_response_validation=True,
@@ -312,7 +317,7 @@ class TestPyWikibaseRestStainless:
                 )
 
     def test_default_headers_option(self) -> None:
-        client = PyWikibaseRestStainless(
+        client = WikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -322,7 +327,7 @@ class TestPyWikibaseRestStainless:
         assert request.headers.get("x-foo") == "bar"
         assert request.headers.get("x-stainless-lang") == "python"
 
-        client2 = PyWikibaseRestStainless(
+        client2 = WikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -335,8 +340,17 @@ class TestPyWikibaseRestStainless:
         assert request.headers.get("x-foo") == "stainless"
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
 
+    def test_validate_headers(self) -> None:
+        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
+        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
+        assert request.headers.get("Authorization") == f"Bearer {access_token}"
+
+        with pytest.raises(WikibaseRestStainlessError):
+            client2 = WikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
+            _ = client2
+
     def test_default_query_option(self) -> None:
-        client = PyWikibaseRestStainless(
+        client = WikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -453,7 +467,7 @@ class TestPyWikibaseRestStainless:
         params = dict(request.url.params)
         assert params == {"foo": "2"}
 
-    def test_multipart_repeating_array(self, client: PyWikibaseRestStainless) -> None:
+    def test_multipart_repeating_array(self, client: WikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions.construct(
                 method="get",
@@ -540,7 +554,7 @@ class TestPyWikibaseRestStainless:
         assert response.foo == 2
 
     def test_base_url_setter(self) -> None:
-        client = PyWikibaseRestStainless(
+        client = WikibaseRestStainless(
             base_url="https://example.com/from_init", access_token=access_token, _strict_response_validation=True
         )
         assert client.base_url == "https://example.com/from_init/"
@@ -550,16 +564,16 @@ class TestPyWikibaseRestStainless:
         assert client.base_url == "https://example.com/from_setter/"
 
     def test_base_url_env(self) -> None:
-        with update_env(PY_WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
-            client = PyWikibaseRestStainless(access_token=access_token, _strict_response_validation=True)
+        with update_env(WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
+            client = WikibaseRestStainless(access_token=access_token, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
 
         # explicit environment arg requires explicitness
-        with update_env(PY_WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
+        with update_env(WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
             with pytest.raises(ValueError, match=r"you must pass base_url=None"):
-                PyWikibaseRestStainless(access_token=access_token, _strict_response_validation=True, environment="test")
+                WikibaseRestStainless(access_token=access_token, _strict_response_validation=True, environment="test")
 
-            client = PyWikibaseRestStainless(
+            client = WikibaseRestStainless(
                 base_url=None, access_token=access_token, _strict_response_validation=True, environment="test"
             )
             assert str(client.base_url).startswith("https://test.wikidata.org/w/rest.php/wikibase/v0")
@@ -567,12 +581,12 @@ class TestPyWikibaseRestStainless:
     @pytest.mark.parametrize(
         "client",
         [
-            PyWikibaseRestStainless(
+            WikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
             ),
-            PyWikibaseRestStainless(
+            WikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
@@ -581,7 +595,7 @@ class TestPyWikibaseRestStainless:
         ],
         ids=["standard", "custom http client"],
     )
-    def test_base_url_trailing_slash(self, client: PyWikibaseRestStainless) -> None:
+    def test_base_url_trailing_slash(self, client: WikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions(
                 method="post",
@@ -594,12 +608,12 @@ class TestPyWikibaseRestStainless:
     @pytest.mark.parametrize(
         "client",
         [
-            PyWikibaseRestStainless(
+            WikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
             ),
-            PyWikibaseRestStainless(
+            WikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
@@ -608,7 +622,7 @@ class TestPyWikibaseRestStainless:
         ],
         ids=["standard", "custom http client"],
     )
-    def test_base_url_no_trailing_slash(self, client: PyWikibaseRestStainless) -> None:
+    def test_base_url_no_trailing_slash(self, client: WikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions(
                 method="post",
@@ -621,12 +635,12 @@ class TestPyWikibaseRestStainless:
     @pytest.mark.parametrize(
         "client",
         [
-            PyWikibaseRestStainless(
+            WikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
             ),
-            PyWikibaseRestStainless(
+            WikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
@@ -635,7 +649,7 @@ class TestPyWikibaseRestStainless:
         ],
         ids=["standard", "custom http client"],
     )
-    def test_absolute_request_url(self, client: PyWikibaseRestStainless) -> None:
+    def test_absolute_request_url(self, client: WikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions(
                 method="post",
@@ -646,7 +660,7 @@ class TestPyWikibaseRestStainless:
         assert request.url == "https://myapi.com/foo"
 
     def test_copied_client_does_not_close_http(self) -> None:
-        client = PyWikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
+        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
         assert not client.is_closed()
 
         copied = client.copy()
@@ -657,7 +671,7 @@ class TestPyWikibaseRestStainless:
         assert not client.is_closed()
 
     def test_client_context_manager(self) -> None:
-        client = PyWikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
+        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
         with client as c2:
             assert c2 is client
             assert not c2.is_closed()
@@ -683,16 +697,14 @@ class TestPyWikibaseRestStainless:
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, text="my-custom-format"))
 
-        strict_client = PyWikibaseRestStainless(
+        strict_client = WikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True
         )
 
         with pytest.raises(APIResponseValidationError):
             strict_client.get("/foo", cast_to=Model)
 
-        client = PyWikibaseRestStainless(
-            base_url=base_url, access_token=access_token, _strict_response_validation=False
-        )
+        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=False)
 
         response = client.get("/foo", cast_to=Model)
         assert isinstance(response, str)  # type: ignore[unreachable]
@@ -719,14 +731,14 @@ class TestPyWikibaseRestStainless:
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
     def test_parse_retry_after_header(self, remaining_retries: int, retry_after: str, timeout: float) -> None:
-        client = PyWikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
+        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
 
         headers = httpx.Headers({"retry-after": retry_after})
         options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
         calculated = client._calculate_retry_timeout(remaining_retries, options, headers)
         assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
 
-    @mock.patch("py_wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
         respx_mock.get("/openapi.json").mock(side_effect=httpx.TimeoutException("Test timeout error"))
@@ -738,7 +750,7 @@ class TestPyWikibaseRestStainless:
 
         assert _get_open_connections(self.client) == 0
 
-    @mock.patch("py_wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
         respx_mock.get("/openapi.json").mock(return_value=httpx.Response(500))
@@ -751,10 +763,8 @@ class TestPyWikibaseRestStainless:
         assert _get_open_connections(self.client) == 0
 
 
-class TestAsyncPyWikibaseRestStainless:
-    client = AsyncPyWikibaseRestStainless(
-        base_url=base_url, access_token=access_token, _strict_response_validation=True
-    )
+class TestAsyncWikibaseRestStainless:
+    client = AsyncWikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
 
     @pytest.mark.respx(base_url=base_url)
     @pytest.mark.asyncio
@@ -803,7 +813,7 @@ class TestAsyncPyWikibaseRestStainless:
         assert isinstance(self.client.timeout, httpx.Timeout)
 
     def test_copy_default_headers(self) -> None:
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -840,7 +850,7 @@ class TestAsyncPyWikibaseRestStainless:
             client.copy(set_default_headers={}, default_headers={"X-Foo": "Bar"})
 
     def test_copy_default_query(self) -> None:
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True, default_query={"foo": "bar"}
         )
         assert _get_params(client)["foo"] == "bar"
@@ -931,10 +941,10 @@ class TestAsyncPyWikibaseRestStainless:
                         # to_raw_response_wrapper leaks through the @functools.wraps() decorator.
                         #
                         # removing the decorator fixes the leak for reasons we don't understand.
-                        "py_wikibase_rest_stainless/_legacy_response.py",
-                        "py_wikibase_rest_stainless/_response.py",
+                        "wikibase_rest_stainless/_legacy_response.py",
+                        "wikibase_rest_stainless/_response.py",
                         # pydantic.BaseModel.model_dump || pydantic.BaseModel.dict leak memory for some reason.
-                        "py_wikibase_rest_stainless/_compat.py",
+                        "wikibase_rest_stainless/_compat.py",
                         # Standard library leaks we don't care about.
                         "/logging/__init__.py",
                     ]
@@ -965,7 +975,7 @@ class TestAsyncPyWikibaseRestStainless:
         assert timeout == httpx.Timeout(100.0)
 
     async def test_client_timeout_option(self) -> None:
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True, timeout=httpx.Timeout(0)
         )
 
@@ -976,7 +986,7 @@ class TestAsyncPyWikibaseRestStainless:
     async def test_http_client_timeout_option(self) -> None:
         # custom timeout given to the httpx client should be used
         async with httpx.AsyncClient(timeout=None) as http_client:
-            client = AsyncPyWikibaseRestStainless(
+            client = AsyncWikibaseRestStainless(
                 base_url=base_url, access_token=access_token, _strict_response_validation=True, http_client=http_client
             )
 
@@ -986,7 +996,7 @@ class TestAsyncPyWikibaseRestStainless:
 
         # no timeout given to the httpx client should not use the httpx default
         async with httpx.AsyncClient() as http_client:
-            client = AsyncPyWikibaseRestStainless(
+            client = AsyncWikibaseRestStainless(
                 base_url=base_url, access_token=access_token, _strict_response_validation=True, http_client=http_client
             )
 
@@ -996,7 +1006,7 @@ class TestAsyncPyWikibaseRestStainless:
 
         # explicitly passing the default timeout currently results in it being ignored
         async with httpx.AsyncClient(timeout=HTTPX_DEFAULT_TIMEOUT) as http_client:
-            client = AsyncPyWikibaseRestStainless(
+            client = AsyncWikibaseRestStainless(
                 base_url=base_url, access_token=access_token, _strict_response_validation=True, http_client=http_client
             )
 
@@ -1007,7 +1017,7 @@ class TestAsyncPyWikibaseRestStainless:
     def test_invalid_http_client(self) -> None:
         with pytest.raises(TypeError, match="Invalid `http_client` arg"):
             with httpx.Client() as http_client:
-                AsyncPyWikibaseRestStainless(
+                AsyncWikibaseRestStainless(
                     base_url=base_url,
                     access_token=access_token,
                     _strict_response_validation=True,
@@ -1015,7 +1025,7 @@ class TestAsyncPyWikibaseRestStainless:
                 )
 
     def test_default_headers_option(self) -> None:
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -1025,7 +1035,7 @@ class TestAsyncPyWikibaseRestStainless:
         assert request.headers.get("x-foo") == "bar"
         assert request.headers.get("x-stainless-lang") == "python"
 
-        client2 = AsyncPyWikibaseRestStainless(
+        client2 = AsyncWikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -1038,8 +1048,19 @@ class TestAsyncPyWikibaseRestStainless:
         assert request.headers.get("x-foo") == "stainless"
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
 
+    def test_validate_headers(self) -> None:
+        client = AsyncWikibaseRestStainless(
+            base_url=base_url, access_token=access_token, _strict_response_validation=True
+        )
+        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
+        assert request.headers.get("Authorization") == f"Bearer {access_token}"
+
+        with pytest.raises(WikibaseRestStainlessError):
+            client2 = AsyncWikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
+            _ = client2
+
     def test_default_query_option(self) -> None:
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -1156,7 +1177,7 @@ class TestAsyncPyWikibaseRestStainless:
         params = dict(request.url.params)
         assert params == {"foo": "2"}
 
-    def test_multipart_repeating_array(self, async_client: AsyncPyWikibaseRestStainless) -> None:
+    def test_multipart_repeating_array(self, async_client: AsyncWikibaseRestStainless) -> None:
         request = async_client._build_request(
             FinalRequestOptions.construct(
                 method="get",
@@ -1243,7 +1264,7 @@ class TestAsyncPyWikibaseRestStainless:
         assert response.foo == 2
 
     def test_base_url_setter(self) -> None:
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url="https://example.com/from_init", access_token=access_token, _strict_response_validation=True
         )
         assert client.base_url == "https://example.com/from_init/"
@@ -1253,18 +1274,18 @@ class TestAsyncPyWikibaseRestStainless:
         assert client.base_url == "https://example.com/from_setter/"
 
     def test_base_url_env(self) -> None:
-        with update_env(PY_WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
-            client = AsyncPyWikibaseRestStainless(access_token=access_token, _strict_response_validation=True)
+        with update_env(WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
+            client = AsyncWikibaseRestStainless(access_token=access_token, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
 
         # explicit environment arg requires explicitness
-        with update_env(PY_WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
+        with update_env(WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
             with pytest.raises(ValueError, match=r"you must pass base_url=None"):
-                AsyncPyWikibaseRestStainless(
+                AsyncWikibaseRestStainless(
                     access_token=access_token, _strict_response_validation=True, environment="test"
                 )
 
-            client = AsyncPyWikibaseRestStainless(
+            client = AsyncWikibaseRestStainless(
                 base_url=None, access_token=access_token, _strict_response_validation=True, environment="test"
             )
             assert str(client.base_url).startswith("https://test.wikidata.org/w/rest.php/wikibase/v0")
@@ -1272,12 +1293,12 @@ class TestAsyncPyWikibaseRestStainless:
     @pytest.mark.parametrize(
         "client",
         [
-            AsyncPyWikibaseRestStainless(
+            AsyncWikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
             ),
-            AsyncPyWikibaseRestStainless(
+            AsyncWikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
@@ -1286,7 +1307,7 @@ class TestAsyncPyWikibaseRestStainless:
         ],
         ids=["standard", "custom http client"],
     )
-    def test_base_url_trailing_slash(self, client: AsyncPyWikibaseRestStainless) -> None:
+    def test_base_url_trailing_slash(self, client: AsyncWikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions(
                 method="post",
@@ -1299,12 +1320,12 @@ class TestAsyncPyWikibaseRestStainless:
     @pytest.mark.parametrize(
         "client",
         [
-            AsyncPyWikibaseRestStainless(
+            AsyncWikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
             ),
-            AsyncPyWikibaseRestStainless(
+            AsyncWikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
@@ -1313,7 +1334,7 @@ class TestAsyncPyWikibaseRestStainless:
         ],
         ids=["standard", "custom http client"],
     )
-    def test_base_url_no_trailing_slash(self, client: AsyncPyWikibaseRestStainless) -> None:
+    def test_base_url_no_trailing_slash(self, client: AsyncWikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions(
                 method="post",
@@ -1326,12 +1347,12 @@ class TestAsyncPyWikibaseRestStainless:
     @pytest.mark.parametrize(
         "client",
         [
-            AsyncPyWikibaseRestStainless(
+            AsyncWikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
             ),
-            AsyncPyWikibaseRestStainless(
+            AsyncWikibaseRestStainless(
                 base_url="http://localhost:5000/custom/path/",
                 access_token=access_token,
                 _strict_response_validation=True,
@@ -1340,7 +1361,7 @@ class TestAsyncPyWikibaseRestStainless:
         ],
         ids=["standard", "custom http client"],
     )
-    def test_absolute_request_url(self, client: AsyncPyWikibaseRestStainless) -> None:
+    def test_absolute_request_url(self, client: AsyncWikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions(
                 method="post",
@@ -1351,7 +1372,7 @@ class TestAsyncPyWikibaseRestStainless:
         assert request.url == "https://myapi.com/foo"
 
     async def test_copied_client_does_not_close_http(self) -> None:
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True
         )
         assert not client.is_closed()
@@ -1365,7 +1386,7 @@ class TestAsyncPyWikibaseRestStainless:
         assert not client.is_closed()
 
     async def test_client_context_manager(self) -> None:
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True
         )
         async with client as c2:
@@ -1395,14 +1416,14 @@ class TestAsyncPyWikibaseRestStainless:
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, text="my-custom-format"))
 
-        strict_client = AsyncPyWikibaseRestStainless(
+        strict_client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True
         )
 
         with pytest.raises(APIResponseValidationError):
             await strict_client.get("/foo", cast_to=Model)
 
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=False
         )
 
@@ -1432,7 +1453,7 @@ class TestAsyncPyWikibaseRestStainless:
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
     @pytest.mark.asyncio
     async def test_parse_retry_after_header(self, remaining_retries: int, retry_after: str, timeout: float) -> None:
-        client = AsyncPyWikibaseRestStainless(
+        client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True
         )
 
@@ -1441,7 +1462,7 @@ class TestAsyncPyWikibaseRestStainless:
         calculated = client._calculate_retry_timeout(remaining_retries, options, headers)
         assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
 
-    @mock.patch("py_wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
         respx_mock.get("/openapi.json").mock(side_effect=httpx.TimeoutException("Test timeout error"))
@@ -1453,7 +1474,7 @@ class TestAsyncPyWikibaseRestStainless:
 
         assert _get_open_connections(self.client) == 0
 
-    @mock.patch("py_wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
         respx_mock.get("/openapi.json").mock(return_value=httpx.Response(500))

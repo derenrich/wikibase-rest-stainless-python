@@ -8,15 +8,15 @@ from typing_extensions import Required, Annotated, TypedDict
 
 import pytest
 
-from py_wikibase_rest_stainless._types import Base64FileInput
-from py_wikibase_rest_stainless._utils import (
+from wikibase_rest_stainless._types import Base64FileInput
+from wikibase_rest_stainless._utils import (
     PropertyInfo,
     transform as _transform,
     parse_datetime,
     async_transform as _async_transform,
 )
-from py_wikibase_rest_stainless._compat import PYDANTIC_V2
-from py_wikibase_rest_stainless._models import BaseModel
+from wikibase_rest_stainless._compat import PYDANTIC_V2
+from wikibase_rest_stainless._models import BaseModel
 
 _T = TypeVar("_T")
 

@@ -1,8 +1,8 @@
-# Py Wikibase Rest Stainless Python API library
+# Wikibase Rest Stainless Python API library
 
-[![PyPI version](https://img.shields.io/pypi/v/py-wikibase-rest-stainless.svg)](https://pypi.org/project/py-wikibase-rest-stainless/)
+[![PyPI version](https://img.shields.io/pypi/v/wikibase-rest-stainless.svg)](https://pypi.org/project/wikibase-rest-stainless/)
 
-The Py Wikibase Rest Stainless Python library provides convenient access to the Py Wikibase Rest Stainless REST API from any Python 3.7+
+The Wikibase Rest Stainless Python library provides convenient access to the Wikibase Rest Stainless REST API from any Python 3.7+
 application. The library includes type definitions for all request params and response fields,
 and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
 
@@ -16,7 +16,7 @@ The REST API documentation can be found [on phabricator.wikimedia.org](https://p
 
 ```sh
 # install from PyPI
-pip install --pre py-wikibase-rest-stainless
+pip install --pre wikibase-rest-stainless
 ```
 
 ## Usage
@@ -24,29 +24,38 @@ pip install --pre py-wikibase-rest-stainless
 The full API of this library can be found in [api.md](api.md).
 
 ```python
-from py_wikibase_rest_stainless import PyWikibaseRestStainless
+import os
+from wikibase_rest_stainless import WikibaseRestStainless
 
-client = PyWikibaseRestStainless(
+client = WikibaseRestStainless(
+    # This is the default and can be omitted
+    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),
     # defaults to "test".
     environment="production",
-    access_token="My Access Token",
 )
 
 openapi_retrieve_response = client.openapi.retrieve()
 ```
 
+While you can provide a `access_token` keyword argument,
+we recommend using [python-dotenv](https://pypi.org/project/python-dotenv/)
+to add `WIKIBASE_BEARER_TOKEN="My Access Token"` to your `.env` file
+so that your Access Token is not stored in source control.
+
 ## Async usage
 
-Simply import `AsyncPyWikibaseRestStainless` instead of `PyWikibaseRestStainless` and use `await` with each API call:
+Simply import `AsyncWikibaseRestStainless` instead of `WikibaseRestStainless` and use `await` with each API call:
 
 ```python
+import os
 import asyncio
-from py_wikibase_rest_stainless import AsyncPyWikibaseRestStainless
+from wikibase_rest_stainless import AsyncWikibaseRestStainless
 
-client = AsyncPyWikibaseRestStainless(
+client = AsyncWikibaseRestStainless(
+    # This is the default and can be omitted
+    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),
     # defaults to "test".
     environment="production",
-    access_token="My Access Token",
 )
 
 
@@ -70,29 +79,27 @@ Typed requests and responses provide autocomplete and documentation within your 
 
 ## Handling errors
 
-When the library is unable to connect to the API (for example, due to network connection problems or a timeout), a subclass of `py_wikibase_rest_stainless.APIConnectionError` is raised.
+When the library is unable to connect to the API (for example, due to network connection problems or a timeout), a subclass of `wikibase_rest_stainless.APIConnectionError` is raised.
 
 When the API returns a non-success status code (that is, 4xx or 5xx
-response), a subclass of `py_wikibase_rest_stainless.APIStatusError` is raised, containing `status_code` and `response` properties.
+response), a subclass of `wikibase_rest_stainless.APIStatusError` is raised, containing `status_code` and `response` properties.
 
-All errors inherit from `py_wikibase_rest_stainless.APIError`.
+All errors inherit from `wikibase_rest_stainless.APIError`.
 
 ```python
-import py_wikibase_rest_stainless
-from py_wikibase_rest_stainless import PyWikibaseRestStainless
+import wikibase_rest_stainless
+from wikibase_rest_stainless import WikibaseRestStainless
 
-client = PyWikibaseRestStainless(
-    access_token="My Access Token",
-)
+client = WikibaseRestStainless()
 
 try:
     client.openapi.retrieve()
-except py_wikibase_rest_stainless.APIConnectionError as e:
+except wikibase_rest_stainless.APIConnectionError as e:
     print("The server could not be reached")
     print(e.__cause__)  # an underlying Exception, likely raised within httpx.
-except py_wikibase_rest_stainless.RateLimitError as e:
+except wikibase_rest_stainless.RateLimitError as e:
     print("A 429 status code was received; we should back off a bit.")
-except py_wikibase_rest_stainless.APIStatusError as e:
+except wikibase_rest_stainless.APIStatusError as e:
     print("Another non-200-range status code was received")
     print(e.status_code)
     print(e.response)
@@ -120,13 +127,12 @@ Connection errors (for example, due to a network connectivity problem), 408 Requ
 You can use the `max_retries` option to configure or disable retry settings:
 
 ```python
-from py_wikibase_rest_stainless import PyWikibaseRestStainless
+from wikibase_rest_stainless import WikibaseRestStainless
 
 # Configure the default for all requests:
-client = PyWikibaseRestStainless(
+client = WikibaseRestStainless(
     # default is 2
     max_retries=0,
-    access_token="My Access Token",
 )
 
 # Or, configure per-request:
@@ -139,19 +145,17 @@ By default requests time out after 1 minute. You can configure this with a `time
 which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advanced/#fine-tuning-the-configuration) object:
 
 ```python
-from py_wikibase_rest_stainless import PyWikibaseRestStainless
+from wikibase_rest_stainless import WikibaseRestStainless
 
 # Configure the default for all requests:
-client = PyWikibaseRestStainless(
+client = WikibaseRestStainless(
     # 20 seconds (default is 1 minute)
     timeout=20.0,
-    access_token="My Access Token",
 )
 
 # More granular control:
-client = PyWikibaseRestStainless(
+client = WikibaseRestStainless(
     timeout=httpx.Timeout(60.0, read=5.0, write=10.0, connect=2.0),
-    access_token="My Access Token",
 )
 
 # Override per-request:
@@ -168,10 +172,10 @@ Note that requests that time out are [retried twice by default](#retries).
 
 We use the standard library [`logging`](https://docs.python.org/3/library/logging.html) module.
 
-You can enable logging by setting the environment variable `PY_WIKIBASE_REST_STAINLESS_LOG` to `debug`.
+You can enable logging by setting the environment variable `WIKIBASE_REST_STAINLESS_LOG` to `debug`.
 
 ```shell
-$ export PY_WIKIBASE_REST_STAINLESS_LOG=debug
+$ export WIKIBASE_REST_STAINLESS_LOG=debug
 ```
 
 ### How to tell whether `None` means `null` or missing
@@ -191,11 +195,9 @@ if response.my_field is None:
 The "raw" Response object can be accessed by prefixing `.with_raw_response.` to any HTTP method call, e.g.,
 
 ```py
-from py_wikibase_rest_stainless import PyWikibaseRestStainless
+from wikibase_rest_stainless import WikibaseRestStainless
 
-client = PyWikibaseRestStainless(
-    access_token="My Access Token",
-)
+client = WikibaseRestStainless()
 response = client.openapi.with_raw_response.retrieve()
 print(response.headers.get('X-My-Header'))
 
@@ -203,9 +205,9 @@ openapi = response.parse()  # get the object that `openapi.retrieve()` would hav
 print(openapi)
 ```
 
-These methods return an [`APIResponse`](https://github.com/derenrich/tree/main/src/py_wikibase_rest_stainless/_response.py) object.
+These methods return an [`APIResponse`](https://github.com/derenrich/wikibase-rest-stainless-python/tree/main/src/wikibase_rest_stainless/_response.py) object.
 
-The async client returns an [`AsyncAPIResponse`](https://github.com/derenrich/tree/main/src/py_wikibase_rest_stainless/_response.py) with the same structure, the only difference being `await`able methods for reading the response content.
+The async client returns an [`AsyncAPIResponse`](https://github.com/derenrich/wikibase-rest-stainless-python/tree/main/src/wikibase_rest_stainless/_response.py) with the same structure, the only difference being `await`able methods for reading the response content.
 
 #### `.with_streaming_response`
 
@@ -268,16 +270,15 @@ You can directly override the [httpx client](https://www.python-httpx.org/api/#c
 
 ```python
 import httpx
-from py_wikibase_rest_stainless import PyWikibaseRestStainless
+from wikibase_rest_stainless import WikibaseRestStainless
 
-client = PyWikibaseRestStainless(
-    # Or use the `PY_WIKIBASE_REST_STAINLESS_BASE_URL` env var
+client = WikibaseRestStainless(
+    # Or use the `WIKIBASE_REST_STAINLESS_BASE_URL` env var
     base_url="http://my.test.server.example.com:8083",
     http_client=httpx.Client(
         proxies="http://my.test.proxy.example.com",
         transport=httpx.HTTPTransport(local_address="0.0.0.0"),
     ),
-    access_token="My Access Token",
 )
 ```
 
@@ -295,7 +296,7 @@ This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) con
 
 We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
 
-We are keen for your feedback; please open an [issue](https://www.github.com/derenrich/py-wikibase-rest-stainless-python/issues) with questions, bugs, or suggestions.
+We are keen for your feedback; please open an [issue](https://www.github.com/derenrich/wikibase-rest-stainless-python/issues) with questions, bugs, or suggestions.
 
 ## Requirements
 
