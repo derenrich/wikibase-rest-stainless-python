@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import List, Iterable
+from typing import List
 
 import httpx
 
 from ...._types import NOT_GIVEN, Body, Query, Headers, NotGiven
 from ...._utils import (
+    is_given,
     maybe_transform,
+    strip_not_given,
     async_maybe_transform,
 )
 from ...._compat import cached_property
@@ -19,35 +21,48 @@ from ...._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from ...._base_client import (
-    make_request_options,
-)
+from ...._base_client import make_request_options
 from ....types.entities.items import (
-    SitelinkUpdateResponse,
-    SitelinkRetrieveResponse,
-    SitelinkUpdateSiteIDResponse,
-    SitelinkRetrieveSiteIDResponse,
     sitelink_update_params,
     sitelink_delete_site_id_params,
     sitelink_update_site_id_params,
 )
+from ....types.entities.items.sitelink_update_response import SitelinkUpdateResponse
+from ....types.entities.items.sitelink_retrieve_response import SitelinkRetrieveResponse
+from ....types.entities.items.sitelink_update_site_id_response import SitelinkUpdateSiteIDResponse
+from ....types.entities.items.sitelink_retrieve_site_id_response import SitelinkRetrieveSiteIDResponse
 
-__all__ = ["Sitelinks", "AsyncSitelinks"]
+__all__ = ["SitelinksResource", "AsyncSitelinksResource"]
 
 
-class Sitelinks(SyncAPIResource):
+class SitelinksResource(SyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> SitelinksWithRawResponse:
-        return SitelinksWithRawResponse(self)
+    def with_raw_response(self) -> SitelinksResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return SitelinksResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> SitelinksWithStreamingResponse:
-        return SitelinksWithStreamingResponse(self)
+    def with_streaming_response(self) -> SitelinksResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return SitelinksResourceWithStreamingResponse(self)
 
     def retrieve(
         self,
         item_id: str,
         *,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -69,6 +84,17 @@ class Sitelinks(SyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
             f"/entities/items/{item_id}/sitelinks",
             options=make_request_options(
@@ -81,10 +107,10 @@ class Sitelinks(SyncAPIResource):
         self,
         item_id: str,
         *,
-        patch: Iterable[sitelink_update_params.Patch],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        body: sitelink_update_params.Body,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -96,8 +122,6 @@ class Sitelinks(SyncAPIResource):
         Change an Item's sitelinks
 
         Args:
-          patch: A JSON Patch document as defined by RFC 6902
-
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -108,17 +132,19 @@ class Sitelinks(SyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._patch(
             f"/entities/items/{item_id}/sitelinks",
-            body=maybe_transform(
-                {
-                    "patch": patch,
-                    "bot": bot,
-                    "comment": comment,
-                    "tags": tags,
-                },
-                sitelink_update_params.SitelinkUpdateParams,
-            ),
+            body=maybe_transform(body, sitelink_update_params.SitelinkUpdateParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -133,6 +159,10 @@ class Sitelinks(SyncAPIResource):
         bot: bool | NotGiven = NOT_GIVEN,
         comment: str | NotGiven = NOT_GIVEN,
         tags: List[str] | NotGiven = NOT_GIVEN,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -156,6 +186,17 @@ class Sitelinks(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not site_id:
             raise ValueError(f"Expected a non-empty value for `site_id` but received {site_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._delete(
             f"/entities/items/{item_id}/sitelinks/{site_id}",
             body=maybe_transform(
@@ -177,6 +218,10 @@ class Sitelinks(SyncAPIResource):
         site_id: str,
         *,
         item_id: str,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -200,6 +245,17 @@ class Sitelinks(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not site_id:
             raise ValueError(f"Expected a non-empty value for `site_id` but received {site_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
             f"/entities/items/{item_id}/sitelinks/{site_id}",
             options=make_request_options(
@@ -214,9 +270,10 @@ class Sitelinks(SyncAPIResource):
         *,
         item_id: str,
         sitelink: sitelink_update_site_id_params.Sitelink,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -240,17 +297,20 @@ class Sitelinks(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not site_id:
             raise ValueError(f"Expected a non-empty value for `site_id` but received {site_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._put(
             f"/entities/items/{item_id}/sitelinks/{site_id}",
-            body=maybe_transform(
-                {
-                    "sitelink": sitelink,
-                    "bot": bot,
-                    "comment": comment,
-                    "tags": tags,
-                },
-                sitelink_update_site_id_params.SitelinkUpdateSiteIDParams,
-            ),
+            body=maybe_transform({"sitelink": sitelink}, sitelink_update_site_id_params.SitelinkUpdateSiteIDParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -258,19 +318,34 @@ class Sitelinks(SyncAPIResource):
         )
 
 
-class AsyncSitelinks(AsyncAPIResource):
+class AsyncSitelinksResource(AsyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> AsyncSitelinksWithRawResponse:
-        return AsyncSitelinksWithRawResponse(self)
+    def with_raw_response(self) -> AsyncSitelinksResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncSitelinksResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> AsyncSitelinksWithStreamingResponse:
-        return AsyncSitelinksWithStreamingResponse(self)
+    def with_streaming_response(self) -> AsyncSitelinksResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return AsyncSitelinksResourceWithStreamingResponse(self)
 
     async def retrieve(
         self,
         item_id: str,
         *,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -292,6 +367,17 @@ class AsyncSitelinks(AsyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
             f"/entities/items/{item_id}/sitelinks",
             options=make_request_options(
@@ -304,10 +390,10 @@ class AsyncSitelinks(AsyncAPIResource):
         self,
         item_id: str,
         *,
-        patch: Iterable[sitelink_update_params.Patch],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        body: sitelink_update_params.Body,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -319,8 +405,6 @@ class AsyncSitelinks(AsyncAPIResource):
         Change an Item's sitelinks
 
         Args:
-          patch: A JSON Patch document as defined by RFC 6902
-
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -331,17 +415,19 @@ class AsyncSitelinks(AsyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._patch(
             f"/entities/items/{item_id}/sitelinks",
-            body=await async_maybe_transform(
-                {
-                    "patch": patch,
-                    "bot": bot,
-                    "comment": comment,
-                    "tags": tags,
-                },
-                sitelink_update_params.SitelinkUpdateParams,
-            ),
+            body=await async_maybe_transform(body, sitelink_update_params.SitelinkUpdateParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -356,6 +442,10 @@ class AsyncSitelinks(AsyncAPIResource):
         bot: bool | NotGiven = NOT_GIVEN,
         comment: str | NotGiven = NOT_GIVEN,
         tags: List[str] | NotGiven = NOT_GIVEN,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -379,6 +469,17 @@ class AsyncSitelinks(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not site_id:
             raise ValueError(f"Expected a non-empty value for `site_id` but received {site_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._delete(
             f"/entities/items/{item_id}/sitelinks/{site_id}",
             body=await async_maybe_transform(
@@ -400,6 +501,10 @@ class AsyncSitelinks(AsyncAPIResource):
         site_id: str,
         *,
         item_id: str,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -423,6 +528,17 @@ class AsyncSitelinks(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not site_id:
             raise ValueError(f"Expected a non-empty value for `site_id` but received {site_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
             f"/entities/items/{item_id}/sitelinks/{site_id}",
             options=make_request_options(
@@ -437,9 +553,10 @@ class AsyncSitelinks(AsyncAPIResource):
         *,
         item_id: str,
         sitelink: sitelink_update_site_id_params.Sitelink,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -463,16 +580,21 @@ class AsyncSitelinks(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not site_id:
             raise ValueError(f"Expected a non-empty value for `site_id` but received {site_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._put(
             f"/entities/items/{item_id}/sitelinks/{site_id}",
             body=await async_maybe_transform(
-                {
-                    "sitelink": sitelink,
-                    "bot": bot,
-                    "comment": comment,
-                    "tags": tags,
-                },
-                sitelink_update_site_id_params.SitelinkUpdateSiteIDParams,
+                {"sitelink": sitelink}, sitelink_update_site_id_params.SitelinkUpdateSiteIDParams
             ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
@@ -481,8 +603,8 @@ class AsyncSitelinks(AsyncAPIResource):
         )
 
 
-class SitelinksWithRawResponse:
-    def __init__(self, sitelinks: Sitelinks) -> None:
+class SitelinksResourceWithRawResponse:
+    def __init__(self, sitelinks: SitelinksResource) -> None:
         self._sitelinks = sitelinks
 
         self.retrieve = to_raw_response_wrapper(
@@ -502,8 +624,8 @@ class SitelinksWithRawResponse:
         )
 
 
-class AsyncSitelinksWithRawResponse:
-    def __init__(self, sitelinks: AsyncSitelinks) -> None:
+class AsyncSitelinksResourceWithRawResponse:
+    def __init__(self, sitelinks: AsyncSitelinksResource) -> None:
         self._sitelinks = sitelinks
 
         self.retrieve = async_to_raw_response_wrapper(
@@ -523,8 +645,8 @@ class AsyncSitelinksWithRawResponse:
         )
 
 
-class SitelinksWithStreamingResponse:
-    def __init__(self, sitelinks: Sitelinks) -> None:
+class SitelinksResourceWithStreamingResponse:
+    def __init__(self, sitelinks: SitelinksResource) -> None:
         self._sitelinks = sitelinks
 
         self.retrieve = to_streamed_response_wrapper(
@@ -544,8 +666,8 @@ class SitelinksWithStreamingResponse:
         )
 
 
-class AsyncSitelinksWithStreamingResponse:
-    def __init__(self, sitelinks: AsyncSitelinks) -> None:
+class AsyncSitelinksResourceWithStreamingResponse:
+    def __init__(self, sitelinks: AsyncSitelinksResource) -> None:
         self._sitelinks = sitelinks
 
         self.retrieve = async_to_streamed_response_wrapper(

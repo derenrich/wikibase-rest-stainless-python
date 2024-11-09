@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import httpx
 
-from ..types import PropertyDataTypeListResponse
 from .._types import NOT_GIVEN, Body, Query, Headers, NotGiven
 from .._compat import cached_property
 from .._resource import SyncAPIResource, AsyncAPIResource
@@ -14,21 +13,31 @@ from .._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from .._base_client import (
-    make_request_options,
-)
+from .._base_client import make_request_options
+from ..types.property_data_type_list_response import PropertyDataTypeListResponse
 
-__all__ = ["PropertyDataTypes", "AsyncPropertyDataTypes"]
+__all__ = ["PropertyDataTypesResource", "AsyncPropertyDataTypesResource"]
 
 
-class PropertyDataTypes(SyncAPIResource):
+class PropertyDataTypesResource(SyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> PropertyDataTypesWithRawResponse:
-        return PropertyDataTypesWithRawResponse(self)
+    def with_raw_response(self) -> PropertyDataTypesResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return PropertyDataTypesResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> PropertyDataTypesWithStreamingResponse:
-        return PropertyDataTypesWithStreamingResponse(self)
+    def with_streaming_response(self) -> PropertyDataTypesResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return PropertyDataTypesResourceWithStreamingResponse(self)
 
     def list(
         self,
@@ -50,14 +59,25 @@ class PropertyDataTypes(SyncAPIResource):
         )
 
 
-class AsyncPropertyDataTypes(AsyncAPIResource):
+class AsyncPropertyDataTypesResource(AsyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> AsyncPropertyDataTypesWithRawResponse:
-        return AsyncPropertyDataTypesWithRawResponse(self)
+    def with_raw_response(self) -> AsyncPropertyDataTypesResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncPropertyDataTypesResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> AsyncPropertyDataTypesWithStreamingResponse:
-        return AsyncPropertyDataTypesWithStreamingResponse(self)
+    def with_streaming_response(self) -> AsyncPropertyDataTypesResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return AsyncPropertyDataTypesResourceWithStreamingResponse(self)
 
     async def list(
         self,
@@ -79,8 +99,8 @@ class AsyncPropertyDataTypes(AsyncAPIResource):
         )
 
 
-class PropertyDataTypesWithRawResponse:
-    def __init__(self, property_data_types: PropertyDataTypes) -> None:
+class PropertyDataTypesResourceWithRawResponse:
+    def __init__(self, property_data_types: PropertyDataTypesResource) -> None:
         self._property_data_types = property_data_types
 
         self.list = to_raw_response_wrapper(
@@ -88,8 +108,8 @@ class PropertyDataTypesWithRawResponse:
         )
 
 
-class AsyncPropertyDataTypesWithRawResponse:
-    def __init__(self, property_data_types: AsyncPropertyDataTypes) -> None:
+class AsyncPropertyDataTypesResourceWithRawResponse:
+    def __init__(self, property_data_types: AsyncPropertyDataTypesResource) -> None:
         self._property_data_types = property_data_types
 
         self.list = async_to_raw_response_wrapper(
@@ -97,8 +117,8 @@ class AsyncPropertyDataTypesWithRawResponse:
         )
 
 
-class PropertyDataTypesWithStreamingResponse:
-    def __init__(self, property_data_types: PropertyDataTypes) -> None:
+class PropertyDataTypesResourceWithStreamingResponse:
+    def __init__(self, property_data_types: PropertyDataTypesResource) -> None:
         self._property_data_types = property_data_types
 
         self.list = to_streamed_response_wrapper(
@@ -106,8 +126,8 @@ class PropertyDataTypesWithStreamingResponse:
         )
 
 
-class AsyncPropertyDataTypesWithStreamingResponse:
-    def __init__(self, property_data_types: AsyncPropertyDataTypes) -> None:
+class AsyncPropertyDataTypesResourceWithStreamingResponse:
+    def __init__(self, property_data_types: AsyncPropertyDataTypesResource) -> None:
         self._property_data_types = property_data_types
 
         self.list = async_to_streamed_response_wrapper(

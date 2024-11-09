@@ -10,6 +10,7 @@ import inspect
 import tracemalloc
 from typing import Any, Union, cast
 from unittest import mock
+from typing_extensions import Literal
 
 import httpx
 import pytest
@@ -17,7 +18,7 @@ from respx import MockRouter
 from pydantic import ValidationError
 
 from wikibase_rest_stainless import WikibaseRestStainless, APIResponseValidationError, AsyncWikibaseRestStainless
-from wikibase_rest_stainless._client import WikibaseRestStainless, AsyncWikibaseRestStainless
+from wikibase_rest_stainless._types import Omit
 from wikibase_rest_stainless._models import BaseModel, FinalRequestOptions
 from wikibase_rest_stainless._constants import RAW_RESPONSE_HEADER
 from wikibase_rest_stainless._exceptions import (
@@ -346,7 +347,8 @@ class TestWikibaseRestStainless:
         assert request.headers.get("Authorization") == f"Bearer {access_token}"
 
         with pytest.raises(WikibaseRestStainlessError):
-            client2 = WikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
+            with update_env(**{"WIKIBASE_BEARER_TOKEN": Omit()}):
+                client2 = WikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
             _ = client2
 
     def test_default_query_option(self) -> None:
@@ -690,6 +692,15 @@ class TestWikibaseRestStainless:
 
         assert isinstance(exc.value.__cause__, ValidationError)
 
+    def test_client_max_retries_validation(self) -> None:
+        with pytest.raises(TypeError, match=r"max_retries cannot be None"):
+            WikibaseRestStainless(
+                base_url=base_url,
+                access_token=access_token,
+                _strict_response_validation=True,
+                max_retries=cast(Any, None),
+            )
+
     @pytest.mark.respx(base_url=base_url)
     def test_received_text_for_expected_json(self, respx_mock: MockRouter) -> None:
         class Model(BaseModel):
@@ -727,6 +738,7 @@ class TestWikibaseRestStainless:
             [3, "", 0.5],
             [2, "", 0.5 * 2.0],
             [1, "", 0.5 * 4.0],
+            [-1100, "", 8],  # test large number potentially overflowing
         ],
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
@@ -761,6 +773,83 @@ class TestWikibaseRestStainless:
             )
 
         assert _get_open_connections(self.client) == 0
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    @pytest.mark.parametrize("failure_mode", ["status", "exception"])
+    def test_retries_taken(
+        self,
+        client: WikibaseRestStainless,
+        failures_before_success: int,
+        failure_mode: Literal["status", "exception"],
+        respx_mock: MockRouter,
+    ) -> None:
+        client = client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                if failure_mode == "exception":
+                    raise RuntimeError("oops")
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = client.openapi.with_raw_response.retrieve()
+
+        assert response.retries_taken == failures_before_success
+        assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    def test_omit_retry_count_header(
+        self, client: WikibaseRestStainless, failures_before_success: int, respx_mock: MockRouter
+    ) -> None:
+        client = client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = client.openapi.with_raw_response.retrieve(extra_headers={"x-stainless-retry-count": Omit()})
+
+        assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    def test_overwrite_retry_count_header(
+        self, client: WikibaseRestStainless, failures_before_success: int, respx_mock: MockRouter
+    ) -> None:
+        client = client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = client.openapi.with_raw_response.retrieve(extra_headers={"x-stainless-retry-count": "42"})
+
+        assert response.http_request.headers.get("x-stainless-retry-count") == "42"
 
 
 class TestAsyncWikibaseRestStainless:
@@ -1056,7 +1145,10 @@ class TestAsyncWikibaseRestStainless:
         assert request.headers.get("Authorization") == f"Bearer {access_token}"
 
         with pytest.raises(WikibaseRestStainlessError):
-            client2 = AsyncWikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
+            with update_env(**{"WIKIBASE_BEARER_TOKEN": Omit()}):
+                client2 = AsyncWikibaseRestStainless(
+                    base_url=base_url, access_token=None, _strict_response_validation=True
+                )
             _ = client2
 
     def test_default_query_option(self) -> None:
@@ -1408,6 +1500,15 @@ class TestAsyncWikibaseRestStainless:
 
         assert isinstance(exc.value.__cause__, ValidationError)
 
+    async def test_client_max_retries_validation(self) -> None:
+        with pytest.raises(TypeError, match=r"max_retries cannot be None"):
+            AsyncWikibaseRestStainless(
+                base_url=base_url,
+                access_token=access_token,
+                _strict_response_validation=True,
+                max_retries=cast(Any, None),
+            )
+
     @pytest.mark.respx(base_url=base_url)
     @pytest.mark.asyncio
     async def test_received_text_for_expected_json(self, respx_mock: MockRouter) -> None:
@@ -1448,6 +1549,7 @@ class TestAsyncWikibaseRestStainless:
             [3, "", 0.5],
             [2, "", 0.5 * 2.0],
             [1, "", 0.5 * 4.0],
+            [-1100, "", 8],  # test large number potentially overflowing
         ],
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
@@ -1485,3 +1587,83 @@ class TestAsyncWikibaseRestStainless:
             )
 
         assert _get_open_connections(self.client) == 0
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("failure_mode", ["status", "exception"])
+    async def test_retries_taken(
+        self,
+        async_client: AsyncWikibaseRestStainless,
+        failures_before_success: int,
+        failure_mode: Literal["status", "exception"],
+        respx_mock: MockRouter,
+    ) -> None:
+        client = async_client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                if failure_mode == "exception":
+                    raise RuntimeError("oops")
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = await client.openapi.with_raw_response.retrieve()
+
+        assert response.retries_taken == failures_before_success
+        assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    @pytest.mark.asyncio
+    async def test_omit_retry_count_header(
+        self, async_client: AsyncWikibaseRestStainless, failures_before_success: int, respx_mock: MockRouter
+    ) -> None:
+        client = async_client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = await client.openapi.with_raw_response.retrieve(extra_headers={"x-stainless-retry-count": Omit()})
+
+        assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    @pytest.mark.asyncio
+    async def test_overwrite_retry_count_header(
+        self, async_client: AsyncWikibaseRestStainless, failures_before_success: int, respx_mock: MockRouter
+    ) -> None:
+        client = async_client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = await client.openapi.with_raw_response.retrieve(extra_headers={"x-stainless-retry-count": "42"})
+
+        assert response.http_request.headers.get("x-stainless-retry-count") == "42"

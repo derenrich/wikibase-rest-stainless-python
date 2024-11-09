@@ -52,10 +52,10 @@ ENVIRONMENTS: Dict[str, str] = {
 
 
 class WikibaseRestStainless(SyncAPIClient):
-    openapi: resources.Openapi
-    property_data_types: resources.PropertyDataTypes
-    entities: resources.Entities
-    statements: resources.Statements
+    openapi: resources.OpenAPIResource
+    property_data_types: resources.PropertyDataTypesResource
+    entities: resources.EntitiesResource
+    statements: resources.StatementsResource
     with_raw_response: WikibaseRestStainlessWithRawResponse
     with_streaming_response: WikibaseRestStainlessWithStreamedResponse
 
@@ -74,7 +74,9 @@ class WikibaseRestStainless(SyncAPIClient):
         max_retries: int = DEFAULT_MAX_RETRIES,
         default_headers: Mapping[str, str] | None = None,
         default_query: Mapping[str, object] | None = None,
-        # Configure a custom httpx client. See the [httpx documentation](https://www.python-httpx.org/api/#client) for more details.
+        # Configure a custom httpx client.
+        # We provide a `DefaultHttpxClient` class that you can pass to retain the default values we use for `limits`, `timeout` & `follow_redirects`.
+        # See the [httpx documentation](https://www.python-httpx.org/api/#client) for more details.
         http_client: httpx.Client | None = None,
         # Enable or disable schema validation for data returned by the API.
         # When enabled an error APIResponseValidationError is raised
@@ -135,10 +137,10 @@ class WikibaseRestStainless(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.openapi = resources.Openapi(self)
-        self.property_data_types = resources.PropertyDataTypes(self)
-        self.entities = resources.Entities(self)
-        self.statements = resources.Statements(self)
+        self.openapi = resources.OpenAPIResource(self)
+        self.property_data_types = resources.PropertyDataTypesResource(self)
+        self.entities = resources.EntitiesResource(self)
+        self.statements = resources.StatementsResource(self)
         self.with_raw_response = WikibaseRestStainlessWithRawResponse(self)
         self.with_streaming_response = WikibaseRestStainlessWithStreamedResponse(self)
 
@@ -250,10 +252,10 @@ class WikibaseRestStainless(SyncAPIClient):
 
 
 class AsyncWikibaseRestStainless(AsyncAPIClient):
-    openapi: resources.AsyncOpenapi
-    property_data_types: resources.AsyncPropertyDataTypes
-    entities: resources.AsyncEntities
-    statements: resources.AsyncStatements
+    openapi: resources.AsyncOpenAPIResource
+    property_data_types: resources.AsyncPropertyDataTypesResource
+    entities: resources.AsyncEntitiesResource
+    statements: resources.AsyncStatementsResource
     with_raw_response: AsyncWikibaseRestStainlessWithRawResponse
     with_streaming_response: AsyncWikibaseRestStainlessWithStreamedResponse
 
@@ -272,7 +274,9 @@ class AsyncWikibaseRestStainless(AsyncAPIClient):
         max_retries: int = DEFAULT_MAX_RETRIES,
         default_headers: Mapping[str, str] | None = None,
         default_query: Mapping[str, object] | None = None,
-        # Configure a custom httpx client. See the [httpx documentation](https://www.python-httpx.org/api/#asyncclient) for more details.
+        # Configure a custom httpx client.
+        # We provide a `DefaultAsyncHttpxClient` class that you can pass to retain the default values we use for `limits`, `timeout` & `follow_redirects`.
+        # See the [httpx documentation](https://www.python-httpx.org/api/#asyncclient) for more details.
         http_client: httpx.AsyncClient | None = None,
         # Enable or disable schema validation for data returned by the API.
         # When enabled an error APIResponseValidationError is raised
@@ -333,10 +337,10 @@ class AsyncWikibaseRestStainless(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.openapi = resources.AsyncOpenapi(self)
-        self.property_data_types = resources.AsyncPropertyDataTypes(self)
-        self.entities = resources.AsyncEntities(self)
-        self.statements = resources.AsyncStatements(self)
+        self.openapi = resources.AsyncOpenAPIResource(self)
+        self.property_data_types = resources.AsyncPropertyDataTypesResource(self)
+        self.entities = resources.AsyncEntitiesResource(self)
+        self.statements = resources.AsyncStatementsResource(self)
         self.with_raw_response = AsyncWikibaseRestStainlessWithRawResponse(self)
         self.with_streaming_response = AsyncWikibaseRestStainlessWithStreamedResponse(self)
 
@@ -449,34 +453,36 @@ class AsyncWikibaseRestStainless(AsyncAPIClient):
 
 class WikibaseRestStainlessWithRawResponse:
     def __init__(self, client: WikibaseRestStainless) -> None:
-        self.openapi = resources.OpenapiWithRawResponse(client.openapi)
-        self.property_data_types = resources.PropertyDataTypesWithRawResponse(client.property_data_types)
-        self.entities = resources.EntitiesWithRawResponse(client.entities)
-        self.statements = resources.StatementsWithRawResponse(client.statements)
+        self.openapi = resources.OpenAPIResourceWithRawResponse(client.openapi)
+        self.property_data_types = resources.PropertyDataTypesResourceWithRawResponse(client.property_data_types)
+        self.entities = resources.EntitiesResourceWithRawResponse(client.entities)
+        self.statements = resources.StatementsResourceWithRawResponse(client.statements)
 
 
 class AsyncWikibaseRestStainlessWithRawResponse:
     def __init__(self, client: AsyncWikibaseRestStainless) -> None:
-        self.openapi = resources.AsyncOpenapiWithRawResponse(client.openapi)
-        self.property_data_types = resources.AsyncPropertyDataTypesWithRawResponse(client.property_data_types)
-        self.entities = resources.AsyncEntitiesWithRawResponse(client.entities)
-        self.statements = resources.AsyncStatementsWithRawResponse(client.statements)
+        self.openapi = resources.AsyncOpenAPIResourceWithRawResponse(client.openapi)
+        self.property_data_types = resources.AsyncPropertyDataTypesResourceWithRawResponse(client.property_data_types)
+        self.entities = resources.AsyncEntitiesResourceWithRawResponse(client.entities)
+        self.statements = resources.AsyncStatementsResourceWithRawResponse(client.statements)
 
 
 class WikibaseRestStainlessWithStreamedResponse:
     def __init__(self, client: WikibaseRestStainless) -> None:
-        self.openapi = resources.OpenapiWithStreamingResponse(client.openapi)
-        self.property_data_types = resources.PropertyDataTypesWithStreamingResponse(client.property_data_types)
-        self.entities = resources.EntitiesWithStreamingResponse(client.entities)
-        self.statements = resources.StatementsWithStreamingResponse(client.statements)
+        self.openapi = resources.OpenAPIResourceWithStreamingResponse(client.openapi)
+        self.property_data_types = resources.PropertyDataTypesResourceWithStreamingResponse(client.property_data_types)
+        self.entities = resources.EntitiesResourceWithStreamingResponse(client.entities)
+        self.statements = resources.StatementsResourceWithStreamingResponse(client.statements)
 
 
 class AsyncWikibaseRestStainlessWithStreamedResponse:
     def __init__(self, client: AsyncWikibaseRestStainless) -> None:
-        self.openapi = resources.AsyncOpenapiWithStreamingResponse(client.openapi)
-        self.property_data_types = resources.AsyncPropertyDataTypesWithStreamingResponse(client.property_data_types)
-        self.entities = resources.AsyncEntitiesWithStreamingResponse(client.entities)
-        self.statements = resources.AsyncStatementsWithStreamingResponse(client.statements)
+        self.openapi = resources.AsyncOpenAPIResourceWithStreamingResponse(client.openapi)
+        self.property_data_types = resources.AsyncPropertyDataTypesResourceWithStreamingResponse(
+            client.property_data_types
+        )
+        self.entities = resources.AsyncEntitiesResourceWithStreamingResponse(client.entities)
+        self.statements = resources.AsyncStatementsResourceWithStreamingResponse(client.statements)
 
 
 Client = WikibaseRestStainless

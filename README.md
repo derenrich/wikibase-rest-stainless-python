@@ -2,7 +2,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/wikibase-rest-stainless.svg)](https://pypi.org/project/wikibase-rest-stainless/)
 
-The Wikibase Rest Stainless Python library provides convenient access to the Wikibase Rest Stainless REST API from any Python 3.7+
+The Wikibase Rest Stainless Python library provides convenient access to the Wikibase Rest Stainless REST API from any Python 3.8+
 application. The library includes type definitions for all request params and response fields,
 and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
 
@@ -10,7 +10,7 @@ It is generated with [Stainless](https://www.stainlessapi.com/).
 
 ## Documentation
 
-The REST API documentation can be found [on phabricator.wikimedia.org](https://phabricator.wikimedia.org/project/board/6692/). The full API of this library can be found in [api.md](api.md).
+The REST API documentation can be found on [phabricator.wikimedia.org](https://phabricator.wikimedia.org/project/board/6692/). The full API of this library can be found in [api.md](api.md).
 
 ## Installation
 
@@ -34,7 +34,7 @@ client = WikibaseRestStainless(
     environment="production",
 )
 
-openapi_retrieve_response = client.openapi.retrieve()
+openapi = client.openapi.retrieve()
 ```
 
 While you can provide a `access_token` keyword argument,
@@ -60,7 +60,7 @@ client = AsyncWikibaseRestStainless(
 
 
 async def main() -> None:
-    openapi_retrieve_response = await client.openapi.retrieve()
+    openapi = await client.openapi.retrieve()
 
 
 asyncio.run(main())
@@ -70,10 +70,10 @@ Functionality between the synchronous and asynchronous clients is otherwise iden
 
 ## Using types
 
-Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typing.html#typing.TypedDict). Responses are [Pydantic models](https://docs.pydantic.dev), which provide helper methods for things like:
+Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typing.html#typing.TypedDict). Responses are [Pydantic models](https://docs.pydantic.dev) which also provide helper methods for things like:
 
-- Serializing back into JSON, `model.model_dump_json(indent=2, exclude_unset=True)`
-- Converting to a dictionary, `model.model_dump(exclude_unset=True)`
+- Serializing back into JSON, `model.to_json()`
+- Converting to a dictionary, `model.to_dict()`
 
 Typed requests and responses provide autocomplete and documentation within your editor. If you would like to see type errors in VS Code to help catch bugs earlier, set `python.analysis.typeCheckingMode` to `basic`.
 
@@ -159,7 +159,7 @@ client = WikibaseRestStainless(
 )
 
 # Override per-request:
-client.with_options(timeout=5 * 1000).openapi.retrieve()
+client.with_options(timeout=5.0).openapi.retrieve()
 ```
 
 On timeout, an `APITimeoutError` is thrown.
@@ -227,7 +227,7 @@ The context manager is required so that the response will reliably be closed.
 
 ### Making custom/undocumented requests
 
-This library is typed for convenient access the documented API.
+This library is typed for convenient access to the documented API.
 
 If you need to access undocumented endpoints, params, or response properties, the library can still be used.
 
@@ -249,12 +249,12 @@ response = client.post(
 print(response.headers.get("x-foo"))
 ```
 
-#### Undocumented params
+#### Undocumented request params
 
 If you want to explicitly send an extra param, you can do so with the `extra_query`, `extra_body`, and `extra_headers` request
 options.
 
-#### Undocumented properties
+#### Undocumented response properties
 
 To access undocumented response properties, you can access the extra fields like `response.unknown_prop`. You
 can also get all the extra fields on the Pydantic model as a dict with
@@ -266,20 +266,25 @@ You can directly override the [httpx client](https://www.python-httpx.org/api/#c
 
 - Support for proxies
 - Custom transports
-- Additional [advanced](https://www.python-httpx.org/advanced/#client-instances) functionality
+- Additional [advanced](https://www.python-httpx.org/advanced/clients/) functionality
 
 ```python
-import httpx
-from wikibase_rest_stainless import WikibaseRestStainless
+from wikibase_rest_stainless import WikibaseRestStainless, DefaultHttpxClient
 
 client = WikibaseRestStainless(
     # Or use the `WIKIBASE_REST_STAINLESS_BASE_URL` env var
     base_url="http://my.test.server.example.com:8083",
-    http_client=httpx.Client(
+    http_client=DefaultHttpxClient(
         proxies="http://my.test.proxy.example.com",
         transport=httpx.HTTPTransport(local_address="0.0.0.0"),
     ),
 )
+```
+
+You can also customize the client on a per-request basis by using `with_options()`:
+
+```python
+client.with_options(http_client=DefaultHttpxClient(...))
 ```
 
 ### Managing HTTP resources
@@ -298,6 +303,21 @@ We take backwards-compatibility seriously and work hard to ensure you can rely o
 
 We are keen for your feedback; please open an [issue](https://www.github.com/derenrich/wikibase-rest-stainless-python/issues) with questions, bugs, or suggestions.
 
+### Determining the installed version
+
+If you've upgraded to the latest version but aren't seeing any new features you were expecting then your python environment is likely still using an older version.
+
+You can determine the version that is being used at runtime with:
+
+```py
+import wikibase_rest_stainless
+print(wikibase_rest_stainless.__version__)
+```
+
 ## Requirements
 
-Python 3.7 or higher.
+Python 3.8 or higher.
+
+## Contributing
+
+See [the contributing documentation](./CONTRIBUTING.md).

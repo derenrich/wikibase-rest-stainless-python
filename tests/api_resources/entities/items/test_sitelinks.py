@@ -25,14 +25,25 @@ class TestSitelinks:
     @parametrize
     def test_method_retrieve(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.retrieve(
-            "string",
+            item_id="item_id",
+        )
+        assert_matches_type(SitelinkRetrieveResponse, sitelink, path=["response"])
+
+    @parametrize
+    def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
+        sitelink = client.entities.items.sitelinks.retrieve(
+            item_id="item_id",
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkRetrieveResponse, sitelink, path=["response"])
 
     @parametrize
     def test_raw_response_retrieve(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.sitelinks.with_raw_response.retrieve(
-            "string",
+            item_id="item_id",
         )
 
         assert response.is_closed is True
@@ -43,7 +54,7 @@ class TestSitelinks:
     @parametrize
     def test_streaming_response_retrieve(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.sitelinks.with_streaming_response.retrieve(
-            "string",
+            item_id="item_id",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -57,75 +68,33 @@ class TestSitelinks:
     def test_path_params_retrieve(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             client.entities.items.sitelinks.with_raw_response.retrieve(
-                "",
+                item_id="",
             )
 
     @parametrize
     def test_method_update(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.update(
-            "string",
-            patch=[
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-            ],
+            item_id="item_id",
+            body={},
         )
         assert_matches_type(SitelinkUpdateResponse, sitelink, path=["response"])
 
     @parametrize
     def test_method_update_with_all_params(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.update(
-            "string",
-            patch=[
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-            ],
-            bot=True,
-            comment="API edit fixing the modelling as discussed in ...",
-            tags=["mobile edit", "external tool edit"],
+            item_id="item_id",
+            body={"patch": {}},
+            if_match=["string", "string", "string"],
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkUpdateResponse, sitelink, path=["response"])
 
     @parametrize
     def test_raw_response_update(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.sitelinks.with_raw_response.update(
-            "string",
-            patch=[
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-            ],
+            item_id="item_id",
+            body={},
         )
 
         assert response.is_closed is True
@@ -136,21 +105,8 @@ class TestSitelinks:
     @parametrize
     def test_streaming_response_update(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.sitelinks.with_streaming_response.update(
-            "string",
-            patch=[
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-            ],
+            item_id="item_id",
+            body={},
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -164,47 +120,38 @@ class TestSitelinks:
     def test_path_params_update(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             client.entities.items.sitelinks.with_raw_response.update(
-                "",
-                patch=[
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                ],
+                item_id="",
+                body={},
             )
 
     @parametrize
     def test_method_delete_site_id(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.delete_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         )
         assert_matches_type(str, sitelink, path=["response"])
 
     @parametrize
     def test_method_delete_site_id_with_all_params(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.delete_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, sitelink, path=["response"])
 
     @parametrize
     def test_raw_response_delete_site_id(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.sitelinks.with_raw_response.delete_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         )
 
         assert response.is_closed is True
@@ -215,8 +162,8 @@ class TestSitelinks:
     @parametrize
     def test_streaming_response_delete_site_id(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.sitelinks.with_streaming_response.delete_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -230,29 +177,41 @@ class TestSitelinks:
     def test_path_params_delete_site_id(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             client.entities.items.sitelinks.with_raw_response.delete_site_id(
-                "string",
+                site_id="site_id",
                 item_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `site_id` but received ''"):
             client.entities.items.sitelinks.with_raw_response.delete_site_id(
-                "",
-                item_id="string",
+                site_id="",
+                item_id="item_id",
             )
 
     @parametrize
     def test_method_retrieve_site_id(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.retrieve_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
+        )
+        assert_matches_type(SitelinkRetrieveSiteIDResponse, sitelink, path=["response"])
+
+    @parametrize
+    def test_method_retrieve_site_id_with_all_params(self, client: WikibaseRestStainless) -> None:
+        sitelink = client.entities.items.sitelinks.retrieve_site_id(
+            site_id="site_id",
+            item_id="item_id",
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkRetrieveSiteIDResponse, sitelink, path=["response"])
 
     @parametrize
     def test_raw_response_retrieve_site_id(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.sitelinks.with_raw_response.retrieve_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         )
 
         assert response.is_closed is True
@@ -263,8 +222,8 @@ class TestSitelinks:
     @parametrize
     def test_streaming_response_retrieve_site_id(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.sitelinks.with_streaming_response.retrieve_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -278,21 +237,21 @@ class TestSitelinks:
     def test_path_params_retrieve_site_id(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             client.entities.items.sitelinks.with_raw_response.retrieve_site_id(
-                "string",
+                site_id="site_id",
                 item_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `site_id` but received ''"):
             client.entities.items.sitelinks.with_raw_response.retrieve_site_id(
-                "",
-                item_id="string",
+                site_id="",
+                item_id="item_id",
             )
 
     @parametrize
     def test_method_update_site_id(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.update_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             sitelink={"title": "Sitelink page title"},
         )
         assert_matches_type(SitelinkUpdateSiteIDResponse, sitelink, path=["response"])
@@ -300,23 +259,24 @@ class TestSitelinks:
     @parametrize
     def test_method_update_site_id_with_all_params(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.update_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             sitelink={
                 "title": "Sitelink page title",
                 "badges": ["Q45678", "Q87654"],
             },
-            bot=True,
-            comment="API edit fixing the modelling as discussed in ...",
-            tags=["mobile edit", "external tool edit"],
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkUpdateSiteIDResponse, sitelink, path=["response"])
 
     @parametrize
     def test_raw_response_update_site_id(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.sitelinks.with_raw_response.update_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             sitelink={"title": "Sitelink page title"},
         )
 
@@ -328,8 +288,8 @@ class TestSitelinks:
     @parametrize
     def test_streaming_response_update_site_id(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.sitelinks.with_streaming_response.update_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             sitelink={"title": "Sitelink page title"},
         ) as response:
             assert not response.is_closed
@@ -344,15 +304,15 @@ class TestSitelinks:
     def test_path_params_update_site_id(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             client.entities.items.sitelinks.with_raw_response.update_site_id(
-                "string",
+                site_id="site_id",
                 item_id="",
                 sitelink={"title": "Sitelink page title"},
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `site_id` but received ''"):
             client.entities.items.sitelinks.with_raw_response.update_site_id(
-                "",
-                item_id="string",
+                site_id="",
+                item_id="item_id",
                 sitelink={"title": "Sitelink page title"},
             )
 
@@ -363,14 +323,25 @@ class TestAsyncSitelinks:
     @parametrize
     async def test_method_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.retrieve(
-            "string",
+            item_id="item_id",
+        )
+        assert_matches_type(SitelinkRetrieveResponse, sitelink, path=["response"])
+
+    @parametrize
+    async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
+        sitelink = await async_client.entities.items.sitelinks.retrieve(
+            item_id="item_id",
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkRetrieveResponse, sitelink, path=["response"])
 
     @parametrize
     async def test_raw_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.sitelinks.with_raw_response.retrieve(
-            "string",
+            item_id="item_id",
         )
 
         assert response.is_closed is True
@@ -381,7 +352,7 @@ class TestAsyncSitelinks:
     @parametrize
     async def test_streaming_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.sitelinks.with_streaming_response.retrieve(
-            "string",
+            item_id="item_id",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -395,75 +366,33 @@ class TestAsyncSitelinks:
     async def test_path_params_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             await async_client.entities.items.sitelinks.with_raw_response.retrieve(
-                "",
+                item_id="",
             )
 
     @parametrize
     async def test_method_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.update(
-            "string",
-            patch=[
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-            ],
+            item_id="item_id",
+            body={},
         )
         assert_matches_type(SitelinkUpdateResponse, sitelink, path=["response"])
 
     @parametrize
     async def test_method_update_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.update(
-            "string",
-            patch=[
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-            ],
-            bot=True,
-            comment="API edit fixing the modelling as discussed in ...",
-            tags=["mobile edit", "external tool edit"],
+            item_id="item_id",
+            body={"patch": {}},
+            if_match=["string", "string", "string"],
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkUpdateResponse, sitelink, path=["response"])
 
     @parametrize
     async def test_raw_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.sitelinks.with_raw_response.update(
-            "string",
-            patch=[
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-            ],
+            item_id="item_id",
+            body={},
         )
 
         assert response.is_closed is True
@@ -474,21 +403,8 @@ class TestAsyncSitelinks:
     @parametrize
     async def test_streaming_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.sitelinks.with_streaming_response.update(
-            "string",
-            patch=[
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-            ],
+            item_id="item_id",
+            body={},
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -502,47 +418,38 @@ class TestAsyncSitelinks:
     async def test_path_params_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             await async_client.entities.items.sitelinks.with_raw_response.update(
-                "",
-                patch=[
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                ],
+                item_id="",
+                body={},
             )
 
     @parametrize
     async def test_method_delete_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.delete_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         )
         assert_matches_type(str, sitelink, path=["response"])
 
     @parametrize
     async def test_method_delete_site_id_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.delete_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, sitelink, path=["response"])
 
     @parametrize
     async def test_raw_response_delete_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.sitelinks.with_raw_response.delete_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         )
 
         assert response.is_closed is True
@@ -553,8 +460,8 @@ class TestAsyncSitelinks:
     @parametrize
     async def test_streaming_response_delete_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.sitelinks.with_streaming_response.delete_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -568,29 +475,41 @@ class TestAsyncSitelinks:
     async def test_path_params_delete_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             await async_client.entities.items.sitelinks.with_raw_response.delete_site_id(
-                "string",
+                site_id="site_id",
                 item_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `site_id` but received ''"):
             await async_client.entities.items.sitelinks.with_raw_response.delete_site_id(
-                "",
-                item_id="string",
+                site_id="",
+                item_id="item_id",
             )
 
     @parametrize
     async def test_method_retrieve_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.retrieve_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
+        )
+        assert_matches_type(SitelinkRetrieveSiteIDResponse, sitelink, path=["response"])
+
+    @parametrize
+    async def test_method_retrieve_site_id_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
+        sitelink = await async_client.entities.items.sitelinks.retrieve_site_id(
+            site_id="site_id",
+            item_id="item_id",
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkRetrieveSiteIDResponse, sitelink, path=["response"])
 
     @parametrize
     async def test_raw_response_retrieve_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.sitelinks.with_raw_response.retrieve_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         )
 
         assert response.is_closed is True
@@ -601,8 +520,8 @@ class TestAsyncSitelinks:
     @parametrize
     async def test_streaming_response_retrieve_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.sitelinks.with_streaming_response.retrieve_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -616,21 +535,21 @@ class TestAsyncSitelinks:
     async def test_path_params_retrieve_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             await async_client.entities.items.sitelinks.with_raw_response.retrieve_site_id(
-                "string",
+                site_id="site_id",
                 item_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `site_id` but received ''"):
             await async_client.entities.items.sitelinks.with_raw_response.retrieve_site_id(
-                "",
-                item_id="string",
+                site_id="",
+                item_id="item_id",
             )
 
     @parametrize
     async def test_method_update_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.update_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             sitelink={"title": "Sitelink page title"},
         )
         assert_matches_type(SitelinkUpdateSiteIDResponse, sitelink, path=["response"])
@@ -638,23 +557,24 @@ class TestAsyncSitelinks:
     @parametrize
     async def test_method_update_site_id_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.update_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             sitelink={
                 "title": "Sitelink page title",
                 "badges": ["Q45678", "Q87654"],
             },
-            bot=True,
-            comment="API edit fixing the modelling as discussed in ...",
-            tags=["mobile edit", "external tool edit"],
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkUpdateSiteIDResponse, sitelink, path=["response"])
 
     @parametrize
     async def test_raw_response_update_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.sitelinks.with_raw_response.update_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             sitelink={"title": "Sitelink page title"},
         )
 
@@ -666,8 +586,8 @@ class TestAsyncSitelinks:
     @parametrize
     async def test_streaming_response_update_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.sitelinks.with_streaming_response.update_site_id(
-            "string",
-            item_id="string",
+            site_id="site_id",
+            item_id="item_id",
             sitelink={"title": "Sitelink page title"},
         ) as response:
             assert not response.is_closed
@@ -682,14 +602,14 @@ class TestAsyncSitelinks:
     async def test_path_params_update_site_id(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             await async_client.entities.items.sitelinks.with_raw_response.update_site_id(
-                "string",
+                site_id="site_id",
                 item_id="",
                 sitelink={"title": "Sitelink page title"},
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `site_id` but received ''"):
             await async_client.entities.items.sitelinks.with_raw_response.update_site_id(
-                "",
-                item_id="string",
+                site_id="",
+                item_id="item_id",
                 sitelink={"title": "Sitelink page title"},
             )
