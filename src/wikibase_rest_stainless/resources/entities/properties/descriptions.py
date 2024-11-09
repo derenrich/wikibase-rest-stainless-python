@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import List, Iterable
+from typing import List
 
 import httpx
 
 from ...._types import NOT_GIVEN, Body, Query, Headers, NotGiven
 from ...._utils import (
+    is_given,
     maybe_transform,
+    strip_not_given,
     async_maybe_transform,
 )
 from ...._compat import cached_property
@@ -19,28 +21,37 @@ from ...._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from ...._base_client import (
-    make_request_options,
-)
+from ...._base_client import make_request_options
 from ....types.entities.properties import (
-    DescriptionListResponse,
-    DescriptionUpdateResponse,
     description_create_params,
     description_delete_params,
     description_update_params,
 )
+from ....types.entities.properties.description_list_response import DescriptionListResponse
+from ....types.entities.properties.description_update_response import DescriptionUpdateResponse
 
-__all__ = ["Descriptions", "AsyncDescriptions"]
+__all__ = ["DescriptionsResource", "AsyncDescriptionsResource"]
 
 
-class Descriptions(SyncAPIResource):
+class DescriptionsResource(SyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> DescriptionsWithRawResponse:
-        return DescriptionsWithRawResponse(self)
+    def with_raw_response(self) -> DescriptionsResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return DescriptionsResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> DescriptionsWithStreamingResponse:
-        return DescriptionsWithStreamingResponse(self)
+    def with_streaming_response(self) -> DescriptionsResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return DescriptionsResourceWithStreamingResponse(self)
 
     def create(
         self,
@@ -48,9 +59,10 @@ class Descriptions(SyncAPIResource):
         *,
         property_id: str,
         description: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -74,17 +86,20 @@ class Descriptions(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._put(
             f"/entities/properties/{property_id}/descriptions/{language_code}",
-            body=maybe_transform(
-                {
-                    "description": description,
-                    "bot": bot,
-                    "comment": comment,
-                    "tags": tags,
-                },
-                description_create_params.DescriptionCreateParams,
-            ),
+            body=maybe_transform({"description": description}, description_create_params.DescriptionCreateParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -96,6 +111,10 @@ class Descriptions(SyncAPIResource):
         language_code: str,
         *,
         property_id: str,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -119,6 +138,17 @@ class Descriptions(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
             f"/entities/properties/{property_id}/descriptions/{language_code}",
             options=make_request_options(
@@ -131,10 +161,10 @@ class Descriptions(SyncAPIResource):
         self,
         property_id: str,
         *,
-        patch: Iterable[description_update_params.Patch],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        body: description_update_params.Body,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -146,8 +176,6 @@ class Descriptions(SyncAPIResource):
         Change a Property's descriptions
 
         Args:
-          patch: A JSON Patch document as defined by RFC 6902
-
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -158,17 +186,19 @@ class Descriptions(SyncAPIResource):
         """
         if not property_id:
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._patch(
             f"/entities/properties/{property_id}/descriptions",
-            body=maybe_transform(
-                {
-                    "patch": patch,
-                    "bot": bot,
-                    "comment": comment,
-                    "tags": tags,
-                },
-                description_update_params.DescriptionUpdateParams,
-            ),
+            body=maybe_transform(body, description_update_params.DescriptionUpdateParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -179,6 +209,10 @@ class Descriptions(SyncAPIResource):
         self,
         property_id: str,
         *,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -200,6 +234,17 @@ class Descriptions(SyncAPIResource):
         """
         if not property_id:
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
             f"/entities/properties/{property_id}/descriptions",
             options=make_request_options(
@@ -216,6 +261,10 @@ class Descriptions(SyncAPIResource):
         bot: bool | NotGiven = NOT_GIVEN,
         comment: str | NotGiven = NOT_GIVEN,
         tags: List[str] | NotGiven = NOT_GIVEN,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -239,6 +288,17 @@ class Descriptions(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._delete(
             f"/entities/properties/{property_id}/descriptions/{language_code}",
             body=maybe_transform(
@@ -256,14 +316,25 @@ class Descriptions(SyncAPIResource):
         )
 
 
-class AsyncDescriptions(AsyncAPIResource):
+class AsyncDescriptionsResource(AsyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> AsyncDescriptionsWithRawResponse:
-        return AsyncDescriptionsWithRawResponse(self)
+    def with_raw_response(self) -> AsyncDescriptionsResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncDescriptionsResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> AsyncDescriptionsWithStreamingResponse:
-        return AsyncDescriptionsWithStreamingResponse(self)
+    def with_streaming_response(self) -> AsyncDescriptionsResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return AsyncDescriptionsResourceWithStreamingResponse(self)
 
     async def create(
         self,
@@ -271,9 +342,10 @@ class AsyncDescriptions(AsyncAPIResource):
         *,
         property_id: str,
         description: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -297,16 +369,21 @@ class AsyncDescriptions(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._put(
             f"/entities/properties/{property_id}/descriptions/{language_code}",
             body=await async_maybe_transform(
-                {
-                    "description": description,
-                    "bot": bot,
-                    "comment": comment,
-                    "tags": tags,
-                },
-                description_create_params.DescriptionCreateParams,
+                {"description": description}, description_create_params.DescriptionCreateParams
             ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
@@ -319,6 +396,10 @@ class AsyncDescriptions(AsyncAPIResource):
         language_code: str,
         *,
         property_id: str,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -342,6 +423,17 @@ class AsyncDescriptions(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
             f"/entities/properties/{property_id}/descriptions/{language_code}",
             options=make_request_options(
@@ -354,10 +446,10 @@ class AsyncDescriptions(AsyncAPIResource):
         self,
         property_id: str,
         *,
-        patch: Iterable[description_update_params.Patch],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        body: description_update_params.Body,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -369,8 +461,6 @@ class AsyncDescriptions(AsyncAPIResource):
         Change a Property's descriptions
 
         Args:
-          patch: A JSON Patch document as defined by RFC 6902
-
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -381,17 +471,19 @@ class AsyncDescriptions(AsyncAPIResource):
         """
         if not property_id:
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._patch(
             f"/entities/properties/{property_id}/descriptions",
-            body=await async_maybe_transform(
-                {
-                    "patch": patch,
-                    "bot": bot,
-                    "comment": comment,
-                    "tags": tags,
-                },
-                description_update_params.DescriptionUpdateParams,
-            ),
+            body=await async_maybe_transform(body, description_update_params.DescriptionUpdateParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -402,6 +494,10 @@ class AsyncDescriptions(AsyncAPIResource):
         self,
         property_id: str,
         *,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -423,6 +519,17 @@ class AsyncDescriptions(AsyncAPIResource):
         """
         if not property_id:
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
             f"/entities/properties/{property_id}/descriptions",
             options=make_request_options(
@@ -439,6 +546,10 @@ class AsyncDescriptions(AsyncAPIResource):
         bot: bool | NotGiven = NOT_GIVEN,
         comment: str | NotGiven = NOT_GIVEN,
         tags: List[str] | NotGiven = NOT_GIVEN,
+        if_match: List[str] | NotGiven = NOT_GIVEN,
+        if_modified_since: str | NotGiven = NOT_GIVEN,
+        if_none_match: List[str] | NotGiven = NOT_GIVEN,
+        if_unmodified_since: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -462,6 +573,17 @@ class AsyncDescriptions(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._delete(
             f"/entities/properties/{property_id}/descriptions/{language_code}",
             body=await async_maybe_transform(
@@ -479,8 +601,8 @@ class AsyncDescriptions(AsyncAPIResource):
         )
 
 
-class DescriptionsWithRawResponse:
-    def __init__(self, descriptions: Descriptions) -> None:
+class DescriptionsResourceWithRawResponse:
+    def __init__(self, descriptions: DescriptionsResource) -> None:
         self._descriptions = descriptions
 
         self.create = to_raw_response_wrapper(
@@ -500,8 +622,8 @@ class DescriptionsWithRawResponse:
         )
 
 
-class AsyncDescriptionsWithRawResponse:
-    def __init__(self, descriptions: AsyncDescriptions) -> None:
+class AsyncDescriptionsResourceWithRawResponse:
+    def __init__(self, descriptions: AsyncDescriptionsResource) -> None:
         self._descriptions = descriptions
 
         self.create = async_to_raw_response_wrapper(
@@ -521,8 +643,8 @@ class AsyncDescriptionsWithRawResponse:
         )
 
 
-class DescriptionsWithStreamingResponse:
-    def __init__(self, descriptions: Descriptions) -> None:
+class DescriptionsResourceWithStreamingResponse:
+    def __init__(self, descriptions: DescriptionsResource) -> None:
         self._descriptions = descriptions
 
         self.create = to_streamed_response_wrapper(
@@ -542,8 +664,8 @@ class DescriptionsWithStreamingResponse:
         )
 
 
-class AsyncDescriptionsWithStreamingResponse:
-    def __init__(self, descriptions: AsyncDescriptions) -> None:
+class AsyncDescriptionsResourceWithStreamingResponse:
+    def __init__(self, descriptions: AsyncDescriptionsResource) -> None:
         self._descriptions = descriptions
 
         self.create = async_to_streamed_response_wrapper(

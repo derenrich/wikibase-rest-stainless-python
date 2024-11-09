@@ -2,29 +2,20 @@
 
 from __future__ import annotations
 
-from typing import List, Iterable
-from typing_extensions import Literal, Required, TypedDict
+from typing import List
+from typing_extensions import Required, Annotated, TypedDict
 
-__all__ = ["DescriptionUpdateParams", "Patch"]
+from ...._utils import PropertyInfo
+from ....types.entities.properties import description_update_params
+
+__all__ = ["DescriptionUpdateParams"]
 
 
 class DescriptionUpdateParams(TypedDict, total=False):
-    patch: Required[Iterable[Patch]]
-    """A JSON Patch document as defined by RFC 6902"""
+    body: Required[description_update_params.Body]
 
-    bot: bool
+    if_match: Annotated[List[str], PropertyInfo(alias="If-Match")]
 
-    comment: str
+    if_none_match: Annotated[List[str], PropertyInfo(alias="If-None-Match")]
 
-    tags: List[str]
-
-
-class Patch(TypedDict, total=False):
-    op: Required[Literal["add", "copy", "move", "remove", "replace", "test"]]
-    """The operation to perform"""
-
-    path: Required[str]
-    """A JSON Pointer for the property to manipulate"""
-
-    value: object
-    """The value to be used within the operation"""
+    if_unmodified_since: Annotated[str, PropertyInfo(alias="If-Unmodified-Since")]

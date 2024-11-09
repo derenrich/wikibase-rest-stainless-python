@@ -31,39 +31,34 @@ class TestItems:
     def test_method_create_with_all_params(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.create(
             item={
-                "labels": {
-                    "en": "en-label",
-                    "fr": "fr-label",
+                "aliases": {
+                    "en": ["en-alias1", "en-alias2"],
+                    "fr": ["fr-alias1", "fr-alias2"],
                 },
                 "descriptions": {
                     "en": "en-description",
                     "fr": "fr-description",
                 },
-                "aliases": {
-                    "en": ["en-alias1", "en-alias2"],
-                    "fr": ["fr-alias1", "fr-alias2"],
+                "labels": {
+                    "en": "en-label",
+                    "fr": "fr-label",
                 },
                 "sitelinks": {
                     "afwiki": {
-                        "title": "Douglas Adams",
                         "badges": ["Q17437798"],
+                        "title": "Douglas Adams",
                         "url": "https://af.wikipedia.org/wiki/Douglas_Adams",
                     },
                     "arwiki": {
-                        "title": "دوغلاس آدمز",
                         "badges": ["string", "string", "string"],
+                        "title": "دوغلاس آدمز",
                         "url": "https://ar.wikipedia.org/wiki/%D8%AF%D9%88%D8%BA%D9%84%D8%A7%D8%B3_%D8%A2%D8%AF%D9%85%D8%B2",
                     },
                 },
                 "statements": {
                     "P92": [
                         {
-                            "rank": "normal",
                             "property": {"id": "P92"},
-                            "value": {
-                                "content": "I am a goat",
-                                "type": "value",
-                            },
                             "qualifiers": [
                                 {
                                     "property": {"id": "P92"},
@@ -87,6 +82,7 @@ class TestItems:
                                     },
                                 },
                             ],
+                            "rank": "deprecated",
                             "references": [
                                 {
                                     "parts": [
@@ -164,13 +160,14 @@ class TestItems:
                                     ]
                                 },
                             ],
+                            "value": {
+                                "content": "I am a goat",
+                                "type": "value",
+                            },
                         }
                     ]
                 },
             },
-            bot=True,
-            comment="API edit fixing the modelling as discussed in ...",
-            tags=["mobile edit", "external tool edit"],
         )
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
@@ -201,22 +198,26 @@ class TestItems:
     @parametrize
     def test_method_retrieve(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.retrieve(
-            "string",
+            item_id="item_id",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
     def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.retrieve(
-            "string",
+            item_id="item_id",
             _fields=["type", "labels", "descriptions"],
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
     def test_raw_response_retrieve(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.with_raw_response.retrieve(
-            "string",
+            item_id="item_id",
         )
 
         assert response.is_closed is True
@@ -227,7 +228,7 @@ class TestItems:
     @parametrize
     def test_streaming_response_retrieve(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.with_streaming_response.retrieve(
-            "string",
+            item_id="item_id",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -241,7 +242,7 @@ class TestItems:
     def test_path_params_retrieve(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             client.entities.items.with_raw_response.retrieve(
-                "",
+                item_id="",
             )
 
 
@@ -259,39 +260,34 @@ class TestAsyncItems:
     async def test_method_create_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.create(
             item={
-                "labels": {
-                    "en": "en-label",
-                    "fr": "fr-label",
+                "aliases": {
+                    "en": ["en-alias1", "en-alias2"],
+                    "fr": ["fr-alias1", "fr-alias2"],
                 },
                 "descriptions": {
                     "en": "en-description",
                     "fr": "fr-description",
                 },
-                "aliases": {
-                    "en": ["en-alias1", "en-alias2"],
-                    "fr": ["fr-alias1", "fr-alias2"],
+                "labels": {
+                    "en": "en-label",
+                    "fr": "fr-label",
                 },
                 "sitelinks": {
                     "afwiki": {
-                        "title": "Douglas Adams",
                         "badges": ["Q17437798"],
+                        "title": "Douglas Adams",
                         "url": "https://af.wikipedia.org/wiki/Douglas_Adams",
                     },
                     "arwiki": {
-                        "title": "دوغلاس آدمز",
                         "badges": ["string", "string", "string"],
+                        "title": "دوغلاس آدمز",
                         "url": "https://ar.wikipedia.org/wiki/%D8%AF%D9%88%D8%BA%D9%84%D8%A7%D8%B3_%D8%A2%D8%AF%D9%85%D8%B2",
                     },
                 },
                 "statements": {
                     "P92": [
                         {
-                            "rank": "normal",
                             "property": {"id": "P92"},
-                            "value": {
-                                "content": "I am a goat",
-                                "type": "value",
-                            },
                             "qualifiers": [
                                 {
                                     "property": {"id": "P92"},
@@ -315,6 +311,7 @@ class TestAsyncItems:
                                     },
                                 },
                             ],
+                            "rank": "deprecated",
                             "references": [
                                 {
                                     "parts": [
@@ -392,13 +389,14 @@ class TestAsyncItems:
                                     ]
                                 },
                             ],
+                            "value": {
+                                "content": "I am a goat",
+                                "type": "value",
+                            },
                         }
                     ]
                 },
             },
-            bot=True,
-            comment="API edit fixing the modelling as discussed in ...",
-            tags=["mobile edit", "external tool edit"],
         )
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
@@ -429,22 +427,26 @@ class TestAsyncItems:
     @parametrize
     async def test_method_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.retrieve(
-            "string",
+            item_id="item_id",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
     async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.retrieve(
-            "string",
+            item_id="item_id",
             _fields=["type", "labels", "descriptions"],
+            if_match=["string", "string", "string"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["string", "string", "string"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
     async def test_raw_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.with_raw_response.retrieve(
-            "string",
+            item_id="item_id",
         )
 
         assert response.is_closed is True
@@ -455,7 +457,7 @@ class TestAsyncItems:
     @parametrize
     async def test_streaming_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.with_streaming_response.retrieve(
-            "string",
+            item_id="item_id",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -469,5 +471,5 @@ class TestAsyncItems:
     async def test_path_params_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             await async_client.entities.items.with_raw_response.retrieve(
-                "",
+                item_id="",
             )

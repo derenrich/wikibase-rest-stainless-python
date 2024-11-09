@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from typing import List, Iterable
-from typing_extensions import Required, TypedDict
+from typing_extensions import Required, Annotated, TypedDict
+
+from ...._utils import PropertyInfo
 
 __all__ = ["AliasCreateParams"]
 
@@ -13,8 +15,10 @@ class AliasCreateParams(TypedDict, total=False):
 
     aliases: Required[Iterable[object]]
 
-    bot: bool
+    if_match: Annotated[List[str], PropertyInfo(alias="If-Match")]
 
-    comment: str
+    if_modified_since: Annotated[str, PropertyInfo(alias="If-Modified-Since")]
 
-    tags: List[str]
+    if_none_match: Annotated[List[str], PropertyInfo(alias="If-None-Match")]
+
+    if_unmodified_since: Annotated[str, PropertyInfo(alias="If-Unmodified-Since")]
