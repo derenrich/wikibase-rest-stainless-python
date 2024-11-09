@@ -13,21 +13,30 @@ from .._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from .._base_client import (
-    make_request_options,
-)
+from .._base_client import make_request_options
 
-__all__ = ["Openapi", "AsyncOpenapi"]
+__all__ = ["OpenAPIResource", "AsyncOpenAPIResource"]
 
 
-class Openapi(SyncAPIResource):
+class OpenAPIResource(SyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> OpenapiWithRawResponse:
-        return OpenapiWithRawResponse(self)
+    def with_raw_response(self) -> OpenAPIResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return OpenAPIResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> OpenapiWithStreamingResponse:
-        return OpenapiWithStreamingResponse(self)
+    def with_streaming_response(self) -> OpenAPIResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return OpenAPIResourceWithStreamingResponse(self)
 
     def retrieve(
         self,
@@ -49,14 +58,25 @@ class Openapi(SyncAPIResource):
         )
 
 
-class AsyncOpenapi(AsyncAPIResource):
+class AsyncOpenAPIResource(AsyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> AsyncOpenapiWithRawResponse:
-        return AsyncOpenapiWithRawResponse(self)
+    def with_raw_response(self) -> AsyncOpenAPIResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncOpenAPIResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> AsyncOpenapiWithStreamingResponse:
-        return AsyncOpenapiWithStreamingResponse(self)
+    def with_streaming_response(self) -> AsyncOpenAPIResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return AsyncOpenAPIResourceWithStreamingResponse(self)
 
     async def retrieve(
         self,
@@ -78,8 +98,8 @@ class AsyncOpenapi(AsyncAPIResource):
         )
 
 
-class OpenapiWithRawResponse:
-    def __init__(self, openapi: Openapi) -> None:
+class OpenAPIResourceWithRawResponse:
+    def __init__(self, openapi: OpenAPIResource) -> None:
         self._openapi = openapi
 
         self.retrieve = to_raw_response_wrapper(
@@ -87,8 +107,8 @@ class OpenapiWithRawResponse:
         )
 
 
-class AsyncOpenapiWithRawResponse:
-    def __init__(self, openapi: AsyncOpenapi) -> None:
+class AsyncOpenAPIResourceWithRawResponse:
+    def __init__(self, openapi: AsyncOpenAPIResource) -> None:
         self._openapi = openapi
 
         self.retrieve = async_to_raw_response_wrapper(
@@ -96,8 +116,8 @@ class AsyncOpenapiWithRawResponse:
         )
 
 
-class OpenapiWithStreamingResponse:
-    def __init__(self, openapi: Openapi) -> None:
+class OpenAPIResourceWithStreamingResponse:
+    def __init__(self, openapi: OpenAPIResource) -> None:
         self._openapi = openapi
 
         self.retrieve = to_streamed_response_wrapper(
@@ -105,8 +125,8 @@ class OpenapiWithStreamingResponse:
         )
 
 
-class AsyncOpenapiWithStreamingResponse:
-    def __init__(self, openapi: AsyncOpenapi) -> None:
+class AsyncOpenAPIResourceWithStreamingResponse:
+    def __init__(self, openapi: AsyncOpenAPIResource) -> None:
         self._openapi = openapi
 
         self.retrieve = async_to_streamed_response_wrapper(

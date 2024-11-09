@@ -25,12 +25,6 @@ __all__ = [
 class ItemCreateParams(TypedDict, total=False):
     item: Required[Item]
 
-    bot: bool
-
-    comment: str
-
-    tags: List[str]
-
 
 class ItemSitelinks(TypedDict, total=False):
     badges: List[str]
