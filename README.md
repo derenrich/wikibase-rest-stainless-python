@@ -28,8 +28,7 @@ import os
 from wikibase_rest_stainless import WikibaseRestStainless
 
 client = WikibaseRestStainless(
-    # This is the default and can be omitted
-    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),
+    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),  # This is the default and can be omitted
     # defaults to "test".
     environment="production",
 )
@@ -52,8 +51,7 @@ import asyncio
 from wikibase_rest_stainless import AsyncWikibaseRestStainless
 
 client = AsyncWikibaseRestStainless(
-    # This is the default and can be omitted
-    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),
+    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),  # This is the default and can be omitted
     # defaults to "test".
     environment="production",
 )
