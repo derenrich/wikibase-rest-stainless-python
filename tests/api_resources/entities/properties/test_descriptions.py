@@ -35,9 +35,9 @@ class TestDescriptions:
             language_code="en",
             property_id="property_id",
             description="an example description",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -99,9 +99,9 @@ class TestDescriptions:
         description = client.entities.properties.descriptions.retrieve(
             language_code="en",
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -159,8 +159,8 @@ class TestDescriptions:
         description = client.entities.properties.descriptions.update(
             property_id="property_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
@@ -210,9 +210,9 @@ class TestDescriptions:
     def test_method_list_with_all_params(self, client: WikibaseRestStainless) -> None:
         description = client.entities.properties.descriptions.list(
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionListResponse, description, path=["response"])
@@ -264,9 +264,9 @@ class TestDescriptions:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -330,9 +330,9 @@ class TestAsyncDescriptions:
             language_code="en",
             property_id="property_id",
             description="an example description",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -394,9 +394,9 @@ class TestAsyncDescriptions:
         description = await async_client.entities.properties.descriptions.retrieve(
             language_code="en",
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -454,8 +454,8 @@ class TestAsyncDescriptions:
         description = await async_client.entities.properties.descriptions.update(
             property_id="property_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
@@ -505,9 +505,9 @@ class TestAsyncDescriptions:
     async def test_method_list_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.properties.descriptions.list(
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionListResponse, description, path=["response"])
@@ -559,9 +559,9 @@ class TestAsyncDescriptions:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])

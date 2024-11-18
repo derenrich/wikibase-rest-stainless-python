@@ -33,9 +33,9 @@ class TestSitelinks:
     def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.retrieve(
             item_id="item_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkRetrieveResponse, sitelink, path=["response"])
@@ -84,8 +84,8 @@ class TestSitelinks:
         sitelink = client.entities.items.sitelinks.update(
             item_id="item_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkUpdateResponse, sitelink, path=["response"])
@@ -140,9 +140,9 @@ class TestSitelinks:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, sitelink, path=["response"])
@@ -200,9 +200,9 @@ class TestSitelinks:
         sitelink = client.entities.items.sitelinks.retrieve_site_id(
             site_id="site_id",
             item_id="item_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkRetrieveSiteIDResponse, sitelink, path=["response"])
@@ -265,9 +265,9 @@ class TestSitelinks:
                 "title": "Sitelink page title",
                 "badges": ["Q45678", "Q87654"],
             },
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkUpdateSiteIDResponse, sitelink, path=["response"])
@@ -331,9 +331,9 @@ class TestAsyncSitelinks:
     async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.retrieve(
             item_id="item_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkRetrieveResponse, sitelink, path=["response"])
@@ -382,8 +382,8 @@ class TestAsyncSitelinks:
         sitelink = await async_client.entities.items.sitelinks.update(
             item_id="item_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkUpdateResponse, sitelink, path=["response"])
@@ -438,9 +438,9 @@ class TestAsyncSitelinks:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, sitelink, path=["response"])
@@ -498,9 +498,9 @@ class TestAsyncSitelinks:
         sitelink = await async_client.entities.items.sitelinks.retrieve_site_id(
             site_id="site_id",
             item_id="item_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkRetrieveSiteIDResponse, sitelink, path=["response"])
@@ -563,9 +563,9 @@ class TestAsyncSitelinks:
                 "title": "Sitelink page title",
                 "badges": ["Q45678", "Q87654"],
             },
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(SitelinkUpdateSiteIDResponse, sitelink, path=["response"])

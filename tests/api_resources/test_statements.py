@@ -31,9 +31,9 @@ class TestStatements:
     def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
         statement = client.statements.retrieve(
             statement_id="statement_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(StatementRetrieveResponse, statement, path=["response"])
@@ -82,8 +82,8 @@ class TestStatements:
         statement = client.statements.update(
             statement_id="statement_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
@@ -136,8 +136,8 @@ class TestStatements:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, statement, path=["response"])
@@ -188,9 +188,9 @@ class TestAsyncStatements:
     async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         statement = await async_client.statements.retrieve(
             statement_id="statement_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(StatementRetrieveResponse, statement, path=["response"])
@@ -239,8 +239,8 @@ class TestAsyncStatements:
         statement = await async_client.statements.update(
             statement_id="statement_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
@@ -293,8 +293,8 @@ class TestAsyncStatements:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, statement, path=["response"])
