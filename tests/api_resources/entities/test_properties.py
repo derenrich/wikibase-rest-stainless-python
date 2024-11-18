@@ -31,10 +31,10 @@ class TestProperties:
     def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
         property = client.entities.properties.retrieve(
             property_id="property_id",
-            _fields=["type", "data-type", "labels"],
-            if_match=["string", "string", "string"],
+            _fields=["type"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(PropertyRetrieveResponse, property, path=["response"])
@@ -83,8 +83,8 @@ class TestProperties:
         property = client.entities.properties.update(
             property_id="property_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(PropertyUpdateResponse, property, path=["response"])
@@ -138,10 +138,10 @@ class TestAsyncProperties:
     async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         property = await async_client.entities.properties.retrieve(
             property_id="property_id",
-            _fields=["type", "data-type", "labels"],
-            if_match=["string", "string", "string"],
+            _fields=["type"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(PropertyRetrieveResponse, property, path=["response"])
@@ -190,8 +190,8 @@ class TestAsyncProperties:
         property = await async_client.entities.properties.update(
             property_id="property_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(PropertyUpdateResponse, property, path=["response"])

@@ -32,9 +32,9 @@ class TestLabels:
         label = client.entities.properties.labels.retrieve(
             language_code="en",
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, label, path=["response"])
@@ -94,9 +94,9 @@ class TestLabels:
             language_code="en",
             property_id="property_id",
             label="an example label",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, label, path=["response"])
@@ -156,9 +156,9 @@ class TestLabels:
     def test_method_list_with_all_params(self, client: WikibaseRestStainless) -> None:
         label = client.entities.properties.labels.list(
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(LabelListResponse, label, path=["response"])
@@ -210,9 +210,9 @@ class TestLabels:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, label, path=["response"])
@@ -274,9 +274,9 @@ class TestAsyncLabels:
         label = await async_client.entities.properties.labels.retrieve(
             language_code="en",
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, label, path=["response"])
@@ -336,9 +336,9 @@ class TestAsyncLabels:
             language_code="en",
             property_id="property_id",
             label="an example label",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, label, path=["response"])
@@ -398,9 +398,9 @@ class TestAsyncLabels:
     async def test_method_list_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         label = await async_client.entities.properties.labels.list(
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(LabelListResponse, label, path=["response"])
@@ -452,9 +452,9 @@ class TestAsyncLabels:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, label, path=["response"])
