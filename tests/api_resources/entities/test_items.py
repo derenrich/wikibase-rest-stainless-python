@@ -50,7 +50,7 @@ class TestItems:
                         "url": "https://af.wikipedia.org/wiki/Douglas_Adams",
                     },
                     "arwiki": {
-                        "badges": ["string", "string", "string"],
+                        "badges": ["string"],
                         "title": "دوغلاس آدمز",
                         "url": "https://ar.wikipedia.org/wiki/%D8%AF%D9%88%D8%BA%D9%84%D8%A7%D8%B3_%D8%A2%D8%AF%D9%85%D8%B2",
                     },
@@ -66,21 +66,7 @@ class TestItems:
                                         "content": "I am a goat",
                                         "type": "value",
                                     },
-                                },
-                                {
-                                    "property": {"id": "P92"},
-                                    "value": {
-                                        "content": "I am a goat",
-                                        "type": "value",
-                                    },
-                                },
-                                {
-                                    "property": {"id": "P92"},
-                                    "value": {
-                                        "content": "I am a goat",
-                                        "type": "value",
-                                    },
-                                },
+                                }
                             ],
                             "rank": "deprecated",
                             "references": [
@@ -92,73 +78,9 @@ class TestItems:
                                                 "content": "I am a goat",
                                                 "type": "value",
                                             },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
+                                        }
                                     ]
-                                },
-                                {
-                                    "parts": [
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                    ]
-                                },
-                                {
-                                    "parts": [
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                    ]
-                                },
+                                }
                             ],
                             "value": {
                                 "content": "I am a goat",
@@ -206,10 +128,10 @@ class TestItems:
     def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.retrieve(
             item_id="item_id",
-            _fields=["type", "labels", "descriptions"],
-            if_match=["string", "string", "string"],
+            _fields=["type"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
@@ -279,7 +201,7 @@ class TestAsyncItems:
                         "url": "https://af.wikipedia.org/wiki/Douglas_Adams",
                     },
                     "arwiki": {
-                        "badges": ["string", "string", "string"],
+                        "badges": ["string"],
                         "title": "دوغلاس آدمز",
                         "url": "https://ar.wikipedia.org/wiki/%D8%AF%D9%88%D8%BA%D9%84%D8%A7%D8%B3_%D8%A2%D8%AF%D9%85%D8%B2",
                     },
@@ -295,21 +217,7 @@ class TestAsyncItems:
                                         "content": "I am a goat",
                                         "type": "value",
                                     },
-                                },
-                                {
-                                    "property": {"id": "P92"},
-                                    "value": {
-                                        "content": "I am a goat",
-                                        "type": "value",
-                                    },
-                                },
-                                {
-                                    "property": {"id": "P92"},
-                                    "value": {
-                                        "content": "I am a goat",
-                                        "type": "value",
-                                    },
-                                },
+                                }
                             ],
                             "rank": "deprecated",
                             "references": [
@@ -321,73 +229,9 @@ class TestAsyncItems:
                                                 "content": "I am a goat",
                                                 "type": "value",
                                             },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
+                                        }
                                     ]
-                                },
-                                {
-                                    "parts": [
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                    ]
-                                },
-                                {
-                                    "parts": [
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                        {
-                                            "property": {"id": "P92"},
-                                            "value": {
-                                                "content": "I am a goat",
-                                                "type": "value",
-                                            },
-                                        },
-                                    ]
-                                },
+                                }
                             ],
                             "value": {
                                 "content": "I am a goat",
@@ -435,10 +279,10 @@ class TestAsyncItems:
     async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.retrieve(
             item_id="item_id",
-            _fields=["type", "labels", "descriptions"],
-            if_match=["string", "string", "string"],
+            _fields=["type"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])

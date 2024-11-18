@@ -41,8 +41,8 @@ class TestStatements:
                 "rank": "deprecated",
                 "references": {},
             },
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(object, statement, path=["response"])
@@ -103,9 +103,9 @@ class TestStatements:
         statement = client.entities.properties.statements.retrieve(
             statement_id="P31$9d042001-4a7e-2432-a7e1-233360062379",
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(object, statement, path=["response"])
@@ -165,8 +165,8 @@ class TestStatements:
             statement_id="P31$9d042001-4a7e-2432-a7e1-233360062379",
             property_id="property_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(object, statement, path=["response"])
@@ -227,9 +227,9 @@ class TestStatements:
         statement = client.entities.properties.statements.list(
             property_id="property_id",
             property="property",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(StatementListResponse, statement, path=["response"])
@@ -281,8 +281,8 @@ class TestStatements:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, statement, path=["response"])
@@ -353,8 +353,8 @@ class TestAsyncStatements:
                 "rank": "deprecated",
                 "references": {},
             },
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(object, statement, path=["response"])
@@ -415,9 +415,9 @@ class TestAsyncStatements:
         statement = await async_client.entities.properties.statements.retrieve(
             statement_id="P31$9d042001-4a7e-2432-a7e1-233360062379",
             property_id="property_id",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(object, statement, path=["response"])
@@ -477,8 +477,8 @@ class TestAsyncStatements:
             statement_id="P31$9d042001-4a7e-2432-a7e1-233360062379",
             property_id="property_id",
             body={"patch": {}},
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(object, statement, path=["response"])
@@ -539,9 +539,9 @@ class TestAsyncStatements:
         statement = await async_client.entities.properties.statements.list(
             property_id="property_id",
             property="property",
-            if_match=["string", "string", "string"],
+            if_match=["string"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string", "string", "string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(StatementListResponse, statement, path=["response"])
@@ -593,8 +593,8 @@ class TestAsyncStatements:
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string", "string", "string"],
-            if_none_match=["string", "string", "string"],
+            if_match=["string"],
+            if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, statement, path=["response"])
