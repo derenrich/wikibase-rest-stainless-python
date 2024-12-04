@@ -83,7 +83,14 @@ class TestSitelinks:
     def test_method_update_with_all_params(self, client: WikibaseRestStainless) -> None:
         sitelink = client.entities.items.sitelinks.update(
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "path": "/afwiki/title",
+                        "value": "Douglas Adams",
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
@@ -381,7 +388,14 @@ class TestAsyncSitelinks:
     async def test_method_update_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         sitelink = await async_client.entities.items.sitelinks.update(
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "path": "/afwiki/title",
+                        "value": "Douglas Adams",
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",

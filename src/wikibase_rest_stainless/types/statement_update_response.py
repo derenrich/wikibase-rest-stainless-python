@@ -1,10 +1,18 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
+from typing import List
 from typing_extensions import Literal
 
 from .._models import BaseModel
 
-__all__ = ["StatementUpdateResponse"]
+__all__ = ["StatementUpdateResponse", "Reference"]
+
+
+class Reference(BaseModel):
+    hash: str
+    """Hash of the Reference"""
+
+    parts: List[object]
 
 
 class StatementUpdateResponse(BaseModel):
@@ -13,11 +21,11 @@ class StatementUpdateResponse(BaseModel):
 
     property: object
 
-    qualifiers: object
+    qualifiers: List[object]
 
     rank: Literal["deprecated", "normal", "preferred"]
     """The rank of the Statement"""
 
-    references: object
+    references: List[Reference]
 
     value: object
