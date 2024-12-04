@@ -160,7 +160,14 @@ class TestAliases:
     def test_method_update_with_all_params(self, client: WikibaseRestStainless) -> None:
         alias = client.entities.properties.aliases.update(
             property_id="property_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "path": "/en/0",
+                        "value": "en-alias1",
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
@@ -392,7 +399,14 @@ class TestAsyncAliases:
     async def test_method_update_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         alias = await async_client.entities.properties.aliases.update(
             property_id="property_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "path": "/en/0",
+                        "value": "en-alias1",
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",

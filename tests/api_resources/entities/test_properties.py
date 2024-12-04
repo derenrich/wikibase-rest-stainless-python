@@ -82,7 +82,14 @@ class TestProperties:
     def test_method_update_with_all_params(self, client: WikibaseRestStainless) -> None:
         property = client.entities.properties.update(
             property_id="property_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "path": "/labels/en",
+                        "value": "Instance of",
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
@@ -189,7 +196,14 @@ class TestAsyncProperties:
     async def test_method_update_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         property = await async_client.entities.properties.update(
             property_id="property_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "path": "/labels/en",
+                        "value": "Instance of",
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",

@@ -37,9 +37,9 @@ class TestStatements:
             statement={
                 "property": {},
                 "value": {},
-                "qualifiers": {},
+                "qualifiers": [{}],
                 "rank": "deprecated",
-                "references": {},
+                "references": [{"parts": [{}]}],
             },
             if_match=["string"],
             if_none_match=["string"],
@@ -155,7 +155,14 @@ class TestStatements:
         statement = client.entities.items.statements.update(
             statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         )
         assert_matches_type(object, statement, path=["response"])
 
@@ -164,7 +171,15 @@ class TestStatements:
         statement = client.entities.items.statements.update(
             statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                        "value": {},
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
@@ -176,7 +191,14 @@ class TestStatements:
         response = client.entities.items.statements.with_raw_response.update(
             statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         )
 
         assert response.is_closed is True
@@ -189,7 +211,14 @@ class TestStatements:
         with client.entities.items.statements.with_streaming_response.update(
             statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -205,14 +234,28 @@ class TestStatements:
             client.entities.items.statements.with_raw_response.update(
                 statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
                 item_id="",
-                body={"patch": {}},
+                body={
+                    "patch": [
+                        {
+                            "op": "add",
+                            "path": {},
+                        }
+                    ]
+                },
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             client.entities.items.statements.with_raw_response.update(
                 statement_id="",
                 item_id="item_id",
-                body={"patch": {}},
+                body={
+                    "patch": [
+                        {
+                            "op": "add",
+                            "path": {},
+                        }
+                    ]
+                },
             )
 
     @parametrize
@@ -349,9 +392,9 @@ class TestAsyncStatements:
             statement={
                 "property": {},
                 "value": {},
-                "qualifiers": {},
+                "qualifiers": [{}],
                 "rank": "deprecated",
-                "references": {},
+                "references": [{"parts": [{}]}],
             },
             if_match=["string"],
             if_none_match=["string"],
@@ -467,7 +510,14 @@ class TestAsyncStatements:
         statement = await async_client.entities.items.statements.update(
             statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         )
         assert_matches_type(object, statement, path=["response"])
 
@@ -476,7 +526,15 @@ class TestAsyncStatements:
         statement = await async_client.entities.items.statements.update(
             statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                        "value": {},
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
@@ -488,7 +546,14 @@ class TestAsyncStatements:
         response = await async_client.entities.items.statements.with_raw_response.update(
             statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         )
 
         assert response.is_closed is True
@@ -501,7 +566,14 @@ class TestAsyncStatements:
         async with async_client.entities.items.statements.with_streaming_response.update(
             statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
             item_id="item_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -517,14 +589,28 @@ class TestAsyncStatements:
             await async_client.entities.items.statements.with_raw_response.update(
                 statement_id="Q42$F078E5B3-F9A8-480E-B7AC-D97778CBBEF9",
                 item_id="",
-                body={"patch": {}},
+                body={
+                    "patch": [
+                        {
+                            "op": "add",
+                            "path": {},
+                        }
+                    ]
+                },
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             await async_client.entities.items.statements.with_raw_response.update(
                 statement_id="",
                 item_id="item_id",
-                body={"patch": {}},
+                body={
+                    "patch": [
+                        {
+                            "op": "add",
+                            "path": {},
+                        }
+                    ]
+                },
             )
 
     @parametrize

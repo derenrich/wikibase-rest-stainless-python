@@ -73,7 +73,14 @@ class TestStatements:
     def test_method_update(self, client: WikibaseRestStainless) -> None:
         statement = client.statements.update(
             statement_id="statement_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         )
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
 
@@ -81,7 +88,15 @@ class TestStatements:
     def test_method_update_with_all_params(self, client: WikibaseRestStainless) -> None:
         statement = client.statements.update(
             statement_id="statement_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                        "value": {},
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
@@ -92,7 +107,14 @@ class TestStatements:
     def test_raw_response_update(self, client: WikibaseRestStainless) -> None:
         response = client.statements.with_raw_response.update(
             statement_id="statement_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         )
 
         assert response.is_closed is True
@@ -104,7 +126,14 @@ class TestStatements:
     def test_streaming_response_update(self, client: WikibaseRestStainless) -> None:
         with client.statements.with_streaming_response.update(
             statement_id="statement_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -119,7 +148,14 @@ class TestStatements:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             client.statements.with_raw_response.update(
                 statement_id="",
-                body={"patch": {}},
+                body={
+                    "patch": [
+                        {
+                            "op": "add",
+                            "path": {},
+                        }
+                    ]
+                },
             )
 
     @parametrize
@@ -230,7 +266,14 @@ class TestAsyncStatements:
     async def test_method_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         statement = await async_client.statements.update(
             statement_id="statement_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         )
         assert_matches_type(StatementUpdateResponse, statement, path=["response"])
 
@@ -238,7 +281,15 @@ class TestAsyncStatements:
     async def test_method_update_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         statement = await async_client.statements.update(
             statement_id="statement_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                        "value": {},
+                    }
+                ]
+            },
             if_match=["string"],
             if_none_match=["string"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
@@ -249,7 +300,14 @@ class TestAsyncStatements:
     async def test_raw_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.statements.with_raw_response.update(
             statement_id="statement_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         )
 
         assert response.is_closed is True
@@ -261,7 +319,14 @@ class TestAsyncStatements:
     async def test_streaming_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.statements.with_streaming_response.update(
             statement_id="statement_id",
-            body={"patch": {}},
+            body={
+                "patch": [
+                    {
+                        "op": "add",
+                        "path": {},
+                    }
+                ]
+            },
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -276,7 +341,14 @@ class TestAsyncStatements:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `statement_id` but received ''"):
             await async_client.statements.with_raw_response.update(
                 statement_id="",
-                body={"patch": {}},
+                body={
+                    "patch": [
+                        {
+                            "op": "add",
+                            "path": {},
+                        }
+                    ]
+                },
             )
 
     @parametrize
