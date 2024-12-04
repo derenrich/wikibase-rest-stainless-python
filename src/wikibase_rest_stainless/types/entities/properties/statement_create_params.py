@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Iterable
 from typing_extensions import Literal, Required, Annotated, TypedDict
 
 from ...._utils import PropertyInfo
 
-__all__ = ["StatementCreateParams", "Statement"]
+__all__ = ["StatementCreateParams", "Statement", "StatementReference"]
 
 
 class StatementCreateParams(TypedDict, total=False):
@@ -20,14 +20,18 @@ class StatementCreateParams(TypedDict, total=False):
     if_unmodified_since: Annotated[str, PropertyInfo(alias="If-Unmodified-Since")]
 
 
+class StatementReference(TypedDict, total=False):
+    parts: Required[Iterable[object]]
+
+
 class Statement(TypedDict, total=False):
     property: Required[object]
 
     value: Required[object]
 
-    qualifiers: object
+    qualifiers: Iterable[object]
 
     rank: Literal["deprecated", "normal", "preferred"]
     """The rank of the Statement"""
 
-    references: object
+    references: Iterable[StatementReference]
