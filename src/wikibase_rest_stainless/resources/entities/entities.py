@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from ..._compat import cached_property
-from ..._resource import SyncAPIResource, AsyncAPIResource
-from .items.items import (
+from .items import (
     ItemsResource,
     AsyncItemsResource,
     ItemsResourceWithRawResponse,
@@ -12,7 +10,8 @@ from .items.items import (
     ItemsResourceWithStreamingResponse,
     AsyncItemsResourceWithStreamingResponse,
 )
-from .properties.properties import (
+from ..._compat import cached_property
+from .properties import (
     PropertiesResource,
     AsyncPropertiesResource,
     PropertiesResourceWithRawResponse,
@@ -20,6 +19,9 @@ from .properties.properties import (
     PropertiesResourceWithStreamingResponse,
     AsyncPropertiesResourceWithStreamingResponse,
 )
+from ..._resource import SyncAPIResource, AsyncAPIResource
+from .items.items import ItemsResource, AsyncItemsResource
+from .properties.properties import PropertiesResource, AsyncPropertiesResource
 
 __all__ = ["EntitiesResource", "AsyncEntitiesResource"]
 
