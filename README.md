@@ -1,12 +1,13 @@
 # Wikibase Rest Stainless Python API library
 
-[![PyPI version](https://img.shields.io/pypi/v/wikibase-rest-stainless.svg)](https://pypi.org/project/wikibase-rest-stainless/)
+<!-- prettier-ignore -->
+[![PyPI version](https://img.shields.io/pypi/v/wikibase-rest-stainless.svg?label=pypi%20(stable))](https://pypi.org/project/wikibase-rest-stainless/)
 
-The Wikibase Rest Stainless Python library provides convenient access to the Wikibase Rest Stainless REST API from any Python 3.8+
+The Wikibase Rest Stainless Python library provides convenient access to the Wikibase Rest Stainless REST API from any Python 3.9+
 application. The library includes type definitions for all request params and response fields,
 and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
 
-It is generated with [Stainless](https://www.stainlessapi.com/).
+It is generated with [Stainless](https://www.stainless.com/).
 
 ## Documentation
 
@@ -16,7 +17,7 @@ The REST API documentation can be found on [phabricator.wikimedia.org](https://p
 
 ```sh
 # install from PyPI
-pip install --pre wikibase-rest-stainless
+pip install '--pre wikibase-rest-stainless'
 ```
 
 ## Usage
@@ -66,6 +67,39 @@ asyncio.run(main())
 
 Functionality between the synchronous and asynchronous clients is otherwise identical.
 
+### With aiohttp
+
+By default, the async client uses `httpx` for HTTP requests. However, for improved concurrency performance you may also use `aiohttp` as the HTTP backend.
+
+You can enable this by installing `aiohttp`:
+
+```sh
+# install from PyPI
+pip install '--pre wikibase-rest-stainless[aiohttp]'
+```
+
+Then you can enable it by instantiating the client with `http_client=DefaultAioHttpClient()`:
+
+```python
+import os
+import asyncio
+from wikibase_rest_stainless import DefaultAioHttpClient
+from wikibase_rest_stainless import AsyncWikibaseRestStainless
+
+
+async def main() -> None:
+    async with AsyncWikibaseRestStainless(
+        access_token=os.environ.get(
+            "WIKIBASE_BEARER_TOKEN"
+        ),  # This is the default and can be omitted
+        http_client=DefaultAioHttpClient(),
+    ) as client:
+        openapi = await client.openapi.retrieve()
+
+
+asyncio.run(main())
+```
+
 ## Using types
 
 Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typing.html#typing.TypedDict). Responses are [Pydantic models](https://docs.pydantic.dev) which also provide helper methods for things like:
@@ -74,6 +108,21 @@ Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typ
 - Converting to a dictionary, `model.to_dict()`
 
 Typed requests and responses provide autocomplete and documentation within your editor. If you would like to see type errors in VS Code to help catch bugs earlier, set `python.analysis.typeCheckingMode` to `basic`.
+
+## Nested params
+
+Nested parameters are dictionaries, typed using `TypedDict`, for example:
+
+```python
+from wikibase_rest_stainless import WikibaseRestStainless
+
+client = WikibaseRestStainless()
+
+item = client.entities.items.create(
+    item={},
+)
+print(item.item)
+```
 
 ## Handling errors
 
@@ -103,7 +152,7 @@ except wikibase_rest_stainless.APIStatusError as e:
     print(e.response)
 ```
 
-Error codes are as followed:
+Error codes are as follows:
 
 | Status Code | Error Type                 |
 | ----------- | -------------------------- |
@@ -140,7 +189,7 @@ client.with_options(max_retries=5).openapi.retrieve()
 ### Timeouts
 
 By default requests time out after 1 minute. You can configure this with a `timeout` option,
-which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advanced/#fine-tuning-the-configuration) object:
+which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advanced/timeouts/#fine-tuning-the-configuration) object:
 
 ```python
 from wikibase_rest_stainless import WikibaseRestStainless
@@ -234,8 +283,7 @@ If you need to access undocumented endpoints, params, or response properties, th
 #### Undocumented endpoints
 
 To make requests to undocumented endpoints, you can make requests using `client.get`, `client.post`, and other
-http verbs. Options on the client will be respected (such as retries) will be respected when making this
-request.
+http verbs. Options on the client will be respected (such as retries) when making this request.
 
 ```py
 import httpx
@@ -307,7 +355,7 @@ with WikibaseRestStainless() as client:
 This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) conventions, though certain backwards-incompatible changes may be released as minor versions:
 
 1. Changes that only affect static types, without breaking runtime behavior.
-2. Changes to library internals which are technically public but not intended or documented for external use. _(Please open a GitHub issue to let us know if you are relying on such internals)_.
+2. Changes to library internals which are technically public but not intended or documented for external use. _(Please open a GitHub issue to let us know if you are relying on such internals.)_
 3. Changes that we do not expect to impact the vast majority of users in practice.
 
 We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
@@ -327,7 +375,7 @@ print(wikibase_rest_stainless.__version__)
 
 ## Requirements
 
-Python 3.8 or higher.
+Python 3.9 or higher.
 
 ## Contributing
 

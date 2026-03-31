@@ -24,7 +24,7 @@ class TestDescriptions:
     def test_method_create(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.create(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             description="an example description",
         )
         assert_matches_type(str, description, path=["response"])
@@ -33,11 +33,14 @@ class TestDescriptions:
     def test_method_create_with_all_params(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.create(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             description="an example description",
-            if_match=["string"],
+            bot=True,
+            comment="API edit fixing the modelling as discussed in ...",
+            tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -46,7 +49,7 @@ class TestDescriptions:
     def test_raw_response_create(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.descriptions.with_raw_response.create(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             description="an example description",
         )
 
@@ -59,7 +62,7 @@ class TestDescriptions:
     def test_streaming_response_create(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.descriptions.with_streaming_response.create(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             description="an example description",
         ) as response:
             assert not response.is_closed
@@ -82,7 +85,7 @@ class TestDescriptions:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             client.entities.items.descriptions.with_raw_response.create(
                 language_code="",
-                item_id="item_id",
+                item_id="Q4699102",
                 description="an example description",
             )
 
@@ -90,7 +93,7 @@ class TestDescriptions:
     def test_method_retrieve(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.retrieve(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         )
         assert_matches_type(str, description, path=["response"])
 
@@ -98,10 +101,10 @@ class TestDescriptions:
     def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.retrieve(
             language_code="en",
-            item_id="item_id",
-            if_match=["string"],
+            item_id="Q4699102",
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -110,7 +113,7 @@ class TestDescriptions:
     def test_raw_response_retrieve(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.descriptions.with_raw_response.retrieve(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         )
 
         assert response.is_closed is True
@@ -122,7 +125,7 @@ class TestDescriptions:
     def test_streaming_response_retrieve(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.descriptions.with_streaming_response.retrieve(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -143,31 +146,38 @@ class TestDescriptions:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             client.entities.items.descriptions.with_raw_response.retrieve(
                 language_code="",
-                item_id="item_id",
+                item_id="Q4699102",
             )
 
     @parametrize
     def test_method_update(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.update(
-            item_id="item_id",
-            body={},
+            item_id="Q4699102",
+            patch=[
+                {
+                    "op": "replace",
+                    "path": {},
+                }
+            ],
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
 
     @parametrize
     def test_method_update_with_all_params(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.update(
-            item_id="item_id",
-            body={
-                "patch": [
-                    {
-                        "path": "/en",
-                        "value": "en-description",
-                    }
-                ]
-            },
-            if_match=["string"],
-            if_none_match=["string"],
+            item_id="Q4699102",
+            patch=[
+                {
+                    "op": "replace",
+                    "path": {},
+                    "value": {},
+                }
+            ],
+            bot=True,
+            comment="API edit fixing the modelling as discussed in ...",
+            tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
@@ -175,8 +185,13 @@ class TestDescriptions:
     @parametrize
     def test_raw_response_update(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.descriptions.with_raw_response.update(
-            item_id="item_id",
-            body={},
+            item_id="Q4699102",
+            patch=[
+                {
+                    "op": "replace",
+                    "path": {},
+                }
+            ],
         )
 
         assert response.is_closed is True
@@ -187,8 +202,13 @@ class TestDescriptions:
     @parametrize
     def test_streaming_response_update(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.descriptions.with_streaming_response.update(
-            item_id="item_id",
-            body={},
+            item_id="Q4699102",
+            patch=[
+                {
+                    "op": "replace",
+                    "path": {},
+                }
+            ],
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -203,23 +223,28 @@ class TestDescriptions:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             client.entities.items.descriptions.with_raw_response.update(
                 item_id="",
-                body={},
+                patch=[
+                    {
+                        "op": "replace",
+                        "path": {},
+                    }
+                ],
             )
 
     @parametrize
     def test_method_list(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.list(
-            item_id="item_id",
+            item_id="Q4699102",
         )
         assert_matches_type(DescriptionListResponse, description, path=["response"])
 
     @parametrize
     def test_method_list_with_all_params(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.list(
-            item_id="item_id",
-            if_match=["string"],
+            item_id="Q4699102",
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionListResponse, description, path=["response"])
@@ -227,7 +252,7 @@ class TestDescriptions:
     @parametrize
     def test_raw_response_list(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.descriptions.with_raw_response.list(
-            item_id="item_id",
+            item_id="Q4699102",
         )
 
         assert response.is_closed is True
@@ -238,7 +263,7 @@ class TestDescriptions:
     @parametrize
     def test_streaming_response_list(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.descriptions.with_streaming_response.list(
-            item_id="item_id",
+            item_id="Q4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -259,7 +284,7 @@ class TestDescriptions:
     def test_method_delete(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.delete(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         )
         assert_matches_type(str, description, path=["response"])
 
@@ -267,13 +292,13 @@ class TestDescriptions:
     def test_method_delete_with_all_params(self, client: WikibaseRestStainless) -> None:
         description = client.entities.items.descriptions.delete(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string"],
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -282,7 +307,7 @@ class TestDescriptions:
     def test_raw_response_delete(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.descriptions.with_raw_response.delete(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         )
 
         assert response.is_closed is True
@@ -294,7 +319,7 @@ class TestDescriptions:
     def test_streaming_response_delete(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.descriptions.with_streaming_response.delete(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -315,18 +340,20 @@ class TestDescriptions:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             client.entities.items.descriptions.with_raw_response.delete(
                 language_code="",
-                item_id="item_id",
+                item_id="Q4699102",
             )
 
 
 class TestAsyncDescriptions:
-    parametrize = pytest.mark.parametrize("async_client", [False, True], indirect=True, ids=["loose", "strict"])
+    parametrize = pytest.mark.parametrize(
+        "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
+    )
 
     @parametrize
     async def test_method_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.create(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             description="an example description",
         )
         assert_matches_type(str, description, path=["response"])
@@ -335,11 +362,14 @@ class TestAsyncDescriptions:
     async def test_method_create_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.create(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             description="an example description",
-            if_match=["string"],
+            bot=True,
+            comment="API edit fixing the modelling as discussed in ...",
+            tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -348,7 +378,7 @@ class TestAsyncDescriptions:
     async def test_raw_response_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.descriptions.with_raw_response.create(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             description="an example description",
         )
 
@@ -361,7 +391,7 @@ class TestAsyncDescriptions:
     async def test_streaming_response_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.descriptions.with_streaming_response.create(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             description="an example description",
         ) as response:
             assert not response.is_closed
@@ -384,7 +414,7 @@ class TestAsyncDescriptions:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             await async_client.entities.items.descriptions.with_raw_response.create(
                 language_code="",
-                item_id="item_id",
+                item_id="Q4699102",
                 description="an example description",
             )
 
@@ -392,7 +422,7 @@ class TestAsyncDescriptions:
     async def test_method_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.retrieve(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         )
         assert_matches_type(str, description, path=["response"])
 
@@ -400,10 +430,10 @@ class TestAsyncDescriptions:
     async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.retrieve(
             language_code="en",
-            item_id="item_id",
-            if_match=["string"],
+            item_id="Q4699102",
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -412,7 +442,7 @@ class TestAsyncDescriptions:
     async def test_raw_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.descriptions.with_raw_response.retrieve(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         )
 
         assert response.is_closed is True
@@ -424,7 +454,7 @@ class TestAsyncDescriptions:
     async def test_streaming_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.descriptions.with_streaming_response.retrieve(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -445,31 +475,38 @@ class TestAsyncDescriptions:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             await async_client.entities.items.descriptions.with_raw_response.retrieve(
                 language_code="",
-                item_id="item_id",
+                item_id="Q4699102",
             )
 
     @parametrize
     async def test_method_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.update(
-            item_id="item_id",
-            body={},
+            item_id="Q4699102",
+            patch=[
+                {
+                    "op": "replace",
+                    "path": {},
+                }
+            ],
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
 
     @parametrize
     async def test_method_update_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.update(
-            item_id="item_id",
-            body={
-                "patch": [
-                    {
-                        "path": "/en",
-                        "value": "en-description",
-                    }
-                ]
-            },
-            if_match=["string"],
-            if_none_match=["string"],
+            item_id="Q4699102",
+            patch=[
+                {
+                    "op": "replace",
+                    "path": {},
+                    "value": {},
+                }
+            ],
+            bot=True,
+            comment="API edit fixing the modelling as discussed in ...",
+            tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
@@ -477,8 +514,13 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_raw_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.descriptions.with_raw_response.update(
-            item_id="item_id",
-            body={},
+            item_id="Q4699102",
+            patch=[
+                {
+                    "op": "replace",
+                    "path": {},
+                }
+            ],
         )
 
         assert response.is_closed is True
@@ -489,8 +531,13 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_streaming_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.descriptions.with_streaming_response.update(
-            item_id="item_id",
-            body={},
+            item_id="Q4699102",
+            patch=[
+                {
+                    "op": "replace",
+                    "path": {},
+                }
+            ],
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -505,23 +552,28 @@ class TestAsyncDescriptions:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `item_id` but received ''"):
             await async_client.entities.items.descriptions.with_raw_response.update(
                 item_id="",
-                body={},
+                patch=[
+                    {
+                        "op": "replace",
+                        "path": {},
+                    }
+                ],
             )
 
     @parametrize
     async def test_method_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.list(
-            item_id="item_id",
+            item_id="Q4699102",
         )
         assert_matches_type(DescriptionListResponse, description, path=["response"])
 
     @parametrize
     async def test_method_list_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.list(
-            item_id="item_id",
-            if_match=["string"],
+            item_id="Q4699102",
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionListResponse, description, path=["response"])
@@ -529,7 +581,7 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_raw_response_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.descriptions.with_raw_response.list(
-            item_id="item_id",
+            item_id="Q4699102",
         )
 
         assert response.is_closed is True
@@ -540,7 +592,7 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_streaming_response_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.descriptions.with_streaming_response.list(
-            item_id="item_id",
+            item_id="Q4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -561,7 +613,7 @@ class TestAsyncDescriptions:
     async def test_method_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.delete(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         )
         assert_matches_type(str, description, path=["response"])
 
@@ -569,13 +621,13 @@ class TestAsyncDescriptions:
     async def test_method_delete_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.items.descriptions.delete(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
-            if_match=["string"],
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
@@ -584,7 +636,7 @@ class TestAsyncDescriptions:
     async def test_raw_response_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.descriptions.with_raw_response.delete(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         )
 
         assert response.is_closed is True
@@ -596,7 +648,7 @@ class TestAsyncDescriptions:
     async def test_streaming_response_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.descriptions.with_streaming_response.delete(
             language_code="en",
-            item_id="item_id",
+            item_id="Q4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -617,5 +669,5 @@ class TestAsyncDescriptions:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             await async_client.entities.items.descriptions.with_raw_response.delete(
                 language_code="",
-                item_id="item_id",
+                item_id="Q4699102",
             )

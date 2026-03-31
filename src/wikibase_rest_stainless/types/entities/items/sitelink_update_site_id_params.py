@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import List
 from typing_extensions import Required, Annotated, TypedDict
 
+from ...._types import SequenceNotStr
 from ...._utils import PropertyInfo
 
 __all__ = ["SitelinkUpdateSiteIDParams", "Sitelink"]
@@ -15,11 +15,17 @@ class SitelinkUpdateSiteIDParams(TypedDict, total=False):
 
     sitelink: Required[Sitelink]
 
-    if_match: Annotated[List[str], PropertyInfo(alias="If-Match")]
+    bot: bool
+
+    comment: str
+
+    tags: SequenceNotStr[str]
+
+    if_match: Annotated[SequenceNotStr[str], PropertyInfo(alias="If-Match")]
 
     if_modified_since: Annotated[str, PropertyInfo(alias="If-Modified-Since")]
 
-    if_none_match: Annotated[List[str], PropertyInfo(alias="If-None-Match")]
+    if_none_match: Annotated[SequenceNotStr[str], PropertyInfo(alias="If-None-Match")]
 
     if_unmodified_since: Annotated[str, PropertyInfo(alias="If-Unmodified-Since")]
 
@@ -27,4 +33,4 @@ class SitelinkUpdateSiteIDParams(TypedDict, total=False):
 class Sitelink(TypedDict, total=False):
     title: Required[str]
 
-    badges: List[str]
+    badges: SequenceNotStr[str]

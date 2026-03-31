@@ -2,17 +2,12 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import Iterable
 
 import httpx
 
-from ...._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from ...._utils import (
-    is_given,
-    maybe_transform,
-    strip_not_given,
-    async_maybe_transform,
-)
+from ...._types import Body, Omit, Query, Headers, NotGiven, SequenceNotStr, omit, not_given
+from ...._utils import is_given, path_template, maybe_transform, strip_not_given, async_maybe_transform
 from ...._compat import cached_property
 from ...._resource import SyncAPIResource, AsyncAPIResource
 from ...._response import (
@@ -29,15 +24,20 @@ from ....types.entities.properties import (
     statement_update_params,
 )
 from ....types.entities.properties.statement_list_response import StatementListResponse
+from ....types.entities.properties.statement_create_response import StatementCreateResponse
+from ....types.entities.properties.statement_update_response import StatementUpdateResponse
+from ....types.entities.properties.statement_retrieve_response import StatementRetrieveResponse
 
 __all__ = ["StatementsResource", "AsyncStatementsResource"]
 
 
 class StatementsResource(SyncAPIResource):
+    """Wikibase Statements"""
+
     @cached_property
     def with_raw_response(self) -> StatementsResourceWithRawResponse:
         """
-        This property can be used as a prefix for any HTTP method call to return the
+        This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
@@ -58,16 +58,19 @@ class StatementsResource(SyncAPIResource):
         property_id: str,
         *,
         statement: statement_create_params.Statement,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> object:
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> StatementCreateResponse:
         """
         Add a new Statement to a Property
 
@@ -85,20 +88,28 @@ class StatementsResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._post(
-            f"/entities/properties/{property_id}/statements",
-            body=maybe_transform({"statement": statement}, statement_create_params.StatementCreateParams),
+            path_template("/entities/properties/{property_id}/statements", property_id=property_id),
+            body=maybe_transform(
+                {
+                    "statement": statement,
+                    "bot": bot,
+                    "comment": comment,
+                    "tags": tags,
+                },
+                statement_create_params.StatementCreateParams,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=object,
+            cast_to=StatementCreateResponse,
         )
 
     def retrieve(
@@ -106,17 +117,17 @@ class StatementsResource(SyncAPIResource):
         statement_id: str,
         *,
         property_id: str,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> object:
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> StatementRetrieveResponse:
         """
         This endpoint is also accessible through `/statements/{statement_id}`
 
@@ -136,20 +147,24 @@ class StatementsResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._get(
-            f"/entities/properties/{property_id}/statements/{statement_id}",
+            path_template(
+                "/entities/properties/{property_id}/statements/{statement_id}",
+                property_id=property_id,
+                statement_id=statement_id,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=object,
+            cast_to=StatementRetrieveResponse,
         )
 
     def update(
@@ -157,21 +172,26 @@ class StatementsResource(SyncAPIResource):
         statement_id: str,
         *,
         property_id: str,
-        body: statement_update_params.Body,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        patch: Iterable[statement_update_params.Patch],
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> object:
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> StatementUpdateResponse:
         """
         This endpoint is also accessible through `/statements/{statement_id}`.
 
         Args:
+          patch: A JSON Patch document as defined by RFC 6902
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -187,37 +207,49 @@ class StatementsResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._patch(
-            f"/entities/properties/{property_id}/statements/{statement_id}",
-            body=maybe_transform(body, statement_update_params.StatementUpdateParams),
+            path_template(
+                "/entities/properties/{property_id}/statements/{statement_id}",
+                property_id=property_id,
+                statement_id=statement_id,
+            ),
+            body=maybe_transform(
+                {
+                    "patch": patch,
+                    "bot": bot,
+                    "comment": comment,
+                    "tags": tags,
+                },
+                statement_update_params.StatementUpdateParams,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=object,
+            cast_to=StatementUpdateResponse,
         )
 
     def list(
         self,
         property_id: str,
         *,
-        property: str | NotGiven = NOT_GIVEN,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        property: str | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> StatementListResponse:
         """
         Retrieve Statements from a Property
@@ -238,16 +270,16 @@ class StatementsResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._get(
-            f"/entities/properties/{property_id}/statements",
+            path_template("/entities/properties/{property_id}/statements", property_id=property_id),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -263,18 +295,18 @@ class StatementsResource(SyncAPIResource):
         statement_id: str,
         *,
         property_id: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         This endpoint is also accessible through `/statements/{statement_id}`.
@@ -295,15 +327,19 @@ class StatementsResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._delete(
-            f"/entities/properties/{property_id}/statements/{statement_id}",
+            path_template(
+                "/entities/properties/{property_id}/statements/{statement_id}",
+                property_id=property_id,
+                statement_id=statement_id,
+            ),
             body=maybe_transform(
                 {
                     "bot": bot,
@@ -320,10 +356,12 @@ class StatementsResource(SyncAPIResource):
 
 
 class AsyncStatementsResource(AsyncAPIResource):
+    """Wikibase Statements"""
+
     @cached_property
     def with_raw_response(self) -> AsyncStatementsResourceWithRawResponse:
         """
-        This property can be used as a prefix for any HTTP method call to return the
+        This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
@@ -344,16 +382,19 @@ class AsyncStatementsResource(AsyncAPIResource):
         property_id: str,
         *,
         statement: statement_create_params.Statement,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> object:
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> StatementCreateResponse:
         """
         Add a new Statement to a Property
 
@@ -371,20 +412,28 @@ class AsyncStatementsResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._post(
-            f"/entities/properties/{property_id}/statements",
-            body=await async_maybe_transform({"statement": statement}, statement_create_params.StatementCreateParams),
+            path_template("/entities/properties/{property_id}/statements", property_id=property_id),
+            body=await async_maybe_transform(
+                {
+                    "statement": statement,
+                    "bot": bot,
+                    "comment": comment,
+                    "tags": tags,
+                },
+                statement_create_params.StatementCreateParams,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=object,
+            cast_to=StatementCreateResponse,
         )
 
     async def retrieve(
@@ -392,17 +441,17 @@ class AsyncStatementsResource(AsyncAPIResource):
         statement_id: str,
         *,
         property_id: str,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> object:
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> StatementRetrieveResponse:
         """
         This endpoint is also accessible through `/statements/{statement_id}`
 
@@ -422,20 +471,24 @@ class AsyncStatementsResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._get(
-            f"/entities/properties/{property_id}/statements/{statement_id}",
+            path_template(
+                "/entities/properties/{property_id}/statements/{statement_id}",
+                property_id=property_id,
+                statement_id=statement_id,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=object,
+            cast_to=StatementRetrieveResponse,
         )
 
     async def update(
@@ -443,21 +496,26 @@ class AsyncStatementsResource(AsyncAPIResource):
         statement_id: str,
         *,
         property_id: str,
-        body: statement_update_params.Body,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        patch: Iterable[statement_update_params.Patch],
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> object:
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> StatementUpdateResponse:
         """
         This endpoint is also accessible through `/statements/{statement_id}`.
 
         Args:
+          patch: A JSON Patch document as defined by RFC 6902
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -473,37 +531,49 @@ class AsyncStatementsResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._patch(
-            f"/entities/properties/{property_id}/statements/{statement_id}",
-            body=await async_maybe_transform(body, statement_update_params.StatementUpdateParams),
+            path_template(
+                "/entities/properties/{property_id}/statements/{statement_id}",
+                property_id=property_id,
+                statement_id=statement_id,
+            ),
+            body=await async_maybe_transform(
+                {
+                    "patch": patch,
+                    "bot": bot,
+                    "comment": comment,
+                    "tags": tags,
+                },
+                statement_update_params.StatementUpdateParams,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=object,
+            cast_to=StatementUpdateResponse,
         )
 
     async def list(
         self,
         property_id: str,
         *,
-        property: str | NotGiven = NOT_GIVEN,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        property: str | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> StatementListResponse:
         """
         Retrieve Statements from a Property
@@ -524,16 +594,16 @@ class AsyncStatementsResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._get(
-            f"/entities/properties/{property_id}/statements",
+            path_template("/entities/properties/{property_id}/statements", property_id=property_id),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -549,18 +619,18 @@ class AsyncStatementsResource(AsyncAPIResource):
         statement_id: str,
         *,
         property_id: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         This endpoint is also accessible through `/statements/{statement_id}`.
@@ -581,15 +651,19 @@ class AsyncStatementsResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._delete(
-            f"/entities/properties/{property_id}/statements/{statement_id}",
+            path_template(
+                "/entities/properties/{property_id}/statements/{statement_id}",
+                property_id=property_id,
+                statement_id=statement_id,
+            ),
             body=await async_maybe_transform(
                 {
                     "bot": bot,

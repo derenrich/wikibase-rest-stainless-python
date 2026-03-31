@@ -27,16 +27,18 @@ __all__ = ["EntitiesResource", "AsyncEntitiesResource"]
 class EntitiesResource(SyncAPIResource):
     @cached_property
     def items(self) -> ItemsResource:
+        """Wikibase Items"""
         return ItemsResource(self._client)
 
     @cached_property
     def properties(self) -> PropertiesResource:
+        """Wikibase Properties"""
         return PropertiesResource(self._client)
 
     @cached_property
     def with_raw_response(self) -> EntitiesResourceWithRawResponse:
         """
-        This property can be used as a prefix for any HTTP method call to return the
+        This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
@@ -56,16 +58,18 @@ class EntitiesResource(SyncAPIResource):
 class AsyncEntitiesResource(AsyncAPIResource):
     @cached_property
     def items(self) -> AsyncItemsResource:
+        """Wikibase Items"""
         return AsyncItemsResource(self._client)
 
     @cached_property
     def properties(self) -> AsyncPropertiesResource:
+        """Wikibase Properties"""
         return AsyncPropertiesResource(self._client)
 
     @cached_property
     def with_raw_response(self) -> AsyncEntitiesResourceWithRawResponse:
         """
-        This property can be used as a prefix for any HTTP method call to return the
+        This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
@@ -88,10 +92,12 @@ class EntitiesResourceWithRawResponse:
 
     @cached_property
     def items(self) -> ItemsResourceWithRawResponse:
+        """Wikibase Items"""
         return ItemsResourceWithRawResponse(self._entities.items)
 
     @cached_property
     def properties(self) -> PropertiesResourceWithRawResponse:
+        """Wikibase Properties"""
         return PropertiesResourceWithRawResponse(self._entities.properties)
 
 
@@ -101,10 +107,12 @@ class AsyncEntitiesResourceWithRawResponse:
 
     @cached_property
     def items(self) -> AsyncItemsResourceWithRawResponse:
+        """Wikibase Items"""
         return AsyncItemsResourceWithRawResponse(self._entities.items)
 
     @cached_property
     def properties(self) -> AsyncPropertiesResourceWithRawResponse:
+        """Wikibase Properties"""
         return AsyncPropertiesResourceWithRawResponse(self._entities.properties)
 
 
@@ -114,10 +122,12 @@ class EntitiesResourceWithStreamingResponse:
 
     @cached_property
     def items(self) -> ItemsResourceWithStreamingResponse:
+        """Wikibase Items"""
         return ItemsResourceWithStreamingResponse(self._entities.items)
 
     @cached_property
     def properties(self) -> PropertiesResourceWithStreamingResponse:
+        """Wikibase Properties"""
         return PropertiesResourceWithStreamingResponse(self._entities.properties)
 
 
@@ -127,8 +137,10 @@ class AsyncEntitiesResourceWithStreamingResponse:
 
     @cached_property
     def items(self) -> AsyncItemsResourceWithStreamingResponse:
+        """Wikibase Items"""
         return AsyncItemsResourceWithStreamingResponse(self._entities.items)
 
     @cached_property
     def properties(self) -> AsyncPropertiesResourceWithStreamingResponse:
+        """Wikibase Properties"""
         return AsyncPropertiesResourceWithStreamingResponse(self._entities.properties)
