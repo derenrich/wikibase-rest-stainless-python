@@ -68,7 +68,7 @@ class TestItems:
                                     },
                                 }
                             ],
-                            "rank": "deprecated",
+                            "rank": "normal",
                             "references": [
                                 {
                                     "parts": [
@@ -90,6 +90,9 @@ class TestItems:
                     ]
                 },
             },
+            bot=True,
+            comment="API edit fixing the modelling as discussed in ...",
+            tags=["mobile edit", "external tool edit"],
         )
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
@@ -120,18 +123,18 @@ class TestItems:
     @parametrize
     def test_method_retrieve(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.retrieve(
-            item_id="item_id",
+            item_id="Q4699102",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
     def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
         item = client.entities.items.retrieve(
-            item_id="item_id",
+            item_id="Q4699102",
             _fields=["type"],
-            if_match=["string"],
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
@@ -139,7 +142,7 @@ class TestItems:
     @parametrize
     def test_raw_response_retrieve(self, client: WikibaseRestStainless) -> None:
         response = client.entities.items.with_raw_response.retrieve(
-            item_id="item_id",
+            item_id="Q4699102",
         )
 
         assert response.is_closed is True
@@ -150,7 +153,7 @@ class TestItems:
     @parametrize
     def test_streaming_response_retrieve(self, client: WikibaseRestStainless) -> None:
         with client.entities.items.with_streaming_response.retrieve(
-            item_id="item_id",
+            item_id="Q4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -169,7 +172,9 @@ class TestItems:
 
 
 class TestAsyncItems:
-    parametrize = pytest.mark.parametrize("async_client", [False, True], indirect=True, ids=["loose", "strict"])
+    parametrize = pytest.mark.parametrize(
+        "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
+    )
 
     @parametrize
     async def test_method_create(self, async_client: AsyncWikibaseRestStainless) -> None:
@@ -219,7 +224,7 @@ class TestAsyncItems:
                                     },
                                 }
                             ],
-                            "rank": "deprecated",
+                            "rank": "normal",
                             "references": [
                                 {
                                     "parts": [
@@ -241,6 +246,9 @@ class TestAsyncItems:
                     ]
                 },
             },
+            bot=True,
+            comment="API edit fixing the modelling as discussed in ...",
+            tags=["mobile edit", "external tool edit"],
         )
         assert_matches_type(ItemCreateResponse, item, path=["response"])
 
@@ -271,18 +279,18 @@ class TestAsyncItems:
     @parametrize
     async def test_method_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.retrieve(
-            item_id="item_id",
+            item_id="Q4699102",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
 
     @parametrize
     async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         item = await async_client.entities.items.retrieve(
-            item_id="item_id",
+            item_id="Q4699102",
             _fields=["type"],
-            if_match=["string"],
+            if_match=["*"],
             if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
-            if_none_match=["string"],
+            if_none_match=["*"],
             if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(ItemRetrieveResponse, item, path=["response"])
@@ -290,7 +298,7 @@ class TestAsyncItems:
     @parametrize
     async def test_raw_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.items.with_raw_response.retrieve(
-            item_id="item_id",
+            item_id="Q4699102",
         )
 
         assert response.is_closed is True
@@ -301,7 +309,7 @@ class TestAsyncItems:
     @parametrize
     async def test_streaming_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.items.with_streaming_response.retrieve(
-            item_id="item_id",
+            item_id="Q4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"

@@ -2,17 +2,12 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import Iterable
 
 import httpx
 
-from ...._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from ...._utils import (
-    is_given,
-    maybe_transform,
-    strip_not_given,
-    async_maybe_transform,
-)
+from ...._types import Body, Omit, Query, Headers, NotGiven, SequenceNotStr, omit, not_given
+from ...._utils import is_given, path_template, maybe_transform, strip_not_given, async_maybe_transform
 from ...._compat import cached_property
 from ...._resource import SyncAPIResource, AsyncAPIResource
 from ...._response import (
@@ -36,10 +31,12 @@ __all__ = ["SitelinksResource", "AsyncSitelinksResource"]
 
 
 class SitelinksResource(SyncAPIResource):
+    """Wikibase Item Sitelinks"""
+
     @cached_property
     def with_raw_response(self) -> SitelinksResourceWithRawResponse:
         """
-        This property can be used as a prefix for any HTTP method call to return the
+        This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
@@ -59,16 +56,16 @@ class SitelinksResource(SyncAPIResource):
         self,
         item_id: str,
         *,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> SitelinkRetrieveResponse:
         """
         Retrieve an Item's sitelinks
@@ -87,16 +84,16 @@ class SitelinksResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._get(
-            f"/entities/items/{item_id}/sitelinks",
+            path_template("/entities/items/{item_id}/sitelinks", item_id=item_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -107,21 +104,26 @@ class SitelinksResource(SyncAPIResource):
         self,
         item_id: str,
         *,
-        body: sitelink_update_params.Body,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        patch: Iterable[sitelink_update_params.Patch],
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> SitelinkUpdateResponse:
         """
         Change an Item's sitelinks
 
         Args:
+          patch: A JSON Patch document as defined by RFC 6902
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -135,16 +137,24 @@ class SitelinksResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._patch(
-            f"/entities/items/{item_id}/sitelinks",
-            body=maybe_transform(body, sitelink_update_params.SitelinkUpdateParams),
+            path_template("/entities/items/{item_id}/sitelinks", item_id=item_id),
+            body=maybe_transform(
+                {
+                    "patch": patch,
+                    "bot": bot,
+                    "comment": comment,
+                    "tags": tags,
+                },
+                sitelink_update_params.SitelinkUpdateParams,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -156,19 +166,19 @@ class SitelinksResource(SyncAPIResource):
         site_id: str,
         *,
         item_id: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Delete an Item's sitelink
@@ -189,16 +199,16 @@ class SitelinksResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._delete(
-            f"/entities/items/{item_id}/sitelinks/{site_id}",
+            path_template("/entities/items/{item_id}/sitelinks/{site_id}", item_id=item_id, site_id=site_id),
             body=maybe_transform(
                 {
                     "bot": bot,
@@ -218,16 +228,16 @@ class SitelinksResource(SyncAPIResource):
         site_id: str,
         *,
         item_id: str,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> SitelinkRetrieveSiteIDResponse:
         """
         Retrieve an Item's sitelink
@@ -248,16 +258,16 @@ class SitelinksResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._get(
-            f"/entities/items/{item_id}/sitelinks/{site_id}",
+            path_template("/entities/items/{item_id}/sitelinks/{site_id}", item_id=item_id, site_id=site_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -270,16 +280,19 @@ class SitelinksResource(SyncAPIResource):
         *,
         item_id: str,
         sitelink: sitelink_update_site_id_params.Sitelink,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> SitelinkUpdateSiteIDResponse:
         """
         Add / Replace an item's sitelink
@@ -300,17 +313,25 @@ class SitelinksResource(SyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return self._put(
-            f"/entities/items/{item_id}/sitelinks/{site_id}",
-            body=maybe_transform({"sitelink": sitelink}, sitelink_update_site_id_params.SitelinkUpdateSiteIDParams),
+            path_template("/entities/items/{item_id}/sitelinks/{site_id}", item_id=item_id, site_id=site_id),
+            body=maybe_transform(
+                {
+                    "sitelink": sitelink,
+                    "bot": bot,
+                    "comment": comment,
+                    "tags": tags,
+                },
+                sitelink_update_site_id_params.SitelinkUpdateSiteIDParams,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -319,10 +340,12 @@ class SitelinksResource(SyncAPIResource):
 
 
 class AsyncSitelinksResource(AsyncAPIResource):
+    """Wikibase Item Sitelinks"""
+
     @cached_property
     def with_raw_response(self) -> AsyncSitelinksResourceWithRawResponse:
         """
-        This property can be used as a prefix for any HTTP method call to return the
+        This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
@@ -342,16 +365,16 @@ class AsyncSitelinksResource(AsyncAPIResource):
         self,
         item_id: str,
         *,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> SitelinkRetrieveResponse:
         """
         Retrieve an Item's sitelinks
@@ -370,16 +393,16 @@ class AsyncSitelinksResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._get(
-            f"/entities/items/{item_id}/sitelinks",
+            path_template("/entities/items/{item_id}/sitelinks", item_id=item_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -390,21 +413,26 @@ class AsyncSitelinksResource(AsyncAPIResource):
         self,
         item_id: str,
         *,
-        body: sitelink_update_params.Body,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        patch: Iterable[sitelink_update_params.Patch],
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> SitelinkUpdateResponse:
         """
         Change an Item's sitelinks
 
         Args:
+          patch: A JSON Patch document as defined by RFC 6902
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -418,16 +446,24 @@ class AsyncSitelinksResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._patch(
-            f"/entities/items/{item_id}/sitelinks",
-            body=await async_maybe_transform(body, sitelink_update_params.SitelinkUpdateParams),
+            path_template("/entities/items/{item_id}/sitelinks", item_id=item_id),
+            body=await async_maybe_transform(
+                {
+                    "patch": patch,
+                    "bot": bot,
+                    "comment": comment,
+                    "tags": tags,
+                },
+                sitelink_update_params.SitelinkUpdateParams,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -439,19 +475,19 @@ class AsyncSitelinksResource(AsyncAPIResource):
         site_id: str,
         *,
         item_id: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Delete an Item's sitelink
@@ -472,16 +508,16 @@ class AsyncSitelinksResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._delete(
-            f"/entities/items/{item_id}/sitelinks/{site_id}",
+            path_template("/entities/items/{item_id}/sitelinks/{site_id}", item_id=item_id, site_id=site_id),
             body=await async_maybe_transform(
                 {
                     "bot": bot,
@@ -501,16 +537,16 @@ class AsyncSitelinksResource(AsyncAPIResource):
         site_id: str,
         *,
         item_id: str,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> SitelinkRetrieveSiteIDResponse:
         """
         Retrieve an Item's sitelink
@@ -531,16 +567,16 @@ class AsyncSitelinksResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._get(
-            f"/entities/items/{item_id}/sitelinks/{site_id}",
+            path_template("/entities/items/{item_id}/sitelinks/{site_id}", item_id=item_id, site_id=site_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -553,16 +589,19 @@ class AsyncSitelinksResource(AsyncAPIResource):
         *,
         item_id: str,
         sitelink: sitelink_update_site_id_params.Sitelink,
-        if_match: List[str] | NotGiven = NOT_GIVEN,
-        if_modified_since: str | NotGiven = NOT_GIVEN,
-        if_none_match: List[str] | NotGiven = NOT_GIVEN,
-        if_unmodified_since: str | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> SitelinkUpdateSiteIDResponse:
         """
         Add / Replace an item's sitelink
@@ -583,18 +622,24 @@ class AsyncSitelinksResource(AsyncAPIResource):
         extra_headers = {
             **strip_not_given(
                 {
-                    "If-Match": ",".join(if_match) if is_given(if_match) else NOT_GIVEN,
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
                     "If-Modified-Since": if_modified_since,
-                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else NOT_GIVEN,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
                     "If-Unmodified-Since": if_unmodified_since,
                 }
             ),
             **(extra_headers or {}),
         }
         return await self._put(
-            f"/entities/items/{item_id}/sitelinks/{site_id}",
+            path_template("/entities/items/{item_id}/sitelinks/{site_id}", item_id=item_id, site_id=site_id),
             body=await async_maybe_transform(
-                {"sitelink": sitelink}, sitelink_update_site_id_params.SitelinkUpdateSiteIDParams
+                {
+                    "sitelink": sitelink,
+                    "bot": bot,
+                    "comment": comment,
+                    "tags": tags,
+                },
+                sitelink_update_site_id_params.SitelinkUpdateSiteIDParams,
             ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout

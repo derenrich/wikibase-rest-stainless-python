@@ -2,26 +2,45 @@
 
 from __future__ import annotations
 
-from typing import List, Iterable
+from typing import Iterable
 from typing_extensions import Literal, Required, Annotated, TypedDict
 
+from ...._types import SequenceNotStr
 from ...._utils import PropertyInfo
 
-__all__ = ["StatementCreateParams", "Statement", "StatementReference"]
+__all__ = ["StatementCreateParams", "Statement", "StatementQualifier", "StatementReference", "StatementReferencePart"]
 
 
 class StatementCreateParams(TypedDict, total=False):
     statement: Required[Statement]
 
-    if_match: Annotated[List[str], PropertyInfo(alias="If-Match")]
+    bot: bool
 
-    if_none_match: Annotated[List[str], PropertyInfo(alias="If-None-Match")]
+    comment: str
+
+    tags: SequenceNotStr[str]
+
+    if_match: Annotated[SequenceNotStr[str], PropertyInfo(alias="If-Match")]
+
+    if_none_match: Annotated[SequenceNotStr[str], PropertyInfo(alias="If-None-Match")]
 
     if_unmodified_since: Annotated[str, PropertyInfo(alias="If-Unmodified-Since")]
 
 
+class StatementQualifier(TypedDict, total=False):
+    property: Required[object]
+
+    value: Required[object]
+
+
+class StatementReferencePart(TypedDict, total=False):
+    property: Required[object]
+
+    value: Required[object]
+
+
 class StatementReference(TypedDict, total=False):
-    parts: Required[Iterable[object]]
+    parts: Required[Iterable[StatementReferencePart]]
 
 
 class Statement(TypedDict, total=False):
@@ -29,7 +48,7 @@ class Statement(TypedDict, total=False):
 
     value: Required[object]
 
-    qualifiers: Iterable[object]
+    qualifiers: Iterable[StatementQualifier]
 
     rank: Literal["deprecated", "normal", "preferred"]
     """The rank of the Statement"""

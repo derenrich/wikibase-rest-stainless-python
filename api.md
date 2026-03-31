@@ -1,14 +1,8 @@
 # OpenAPI
 
-Types:
-
-```python
-from wikibase_rest_stainless.types import OpenAPIRetrieveResponse
-```
-
 Methods:
 
-- <code title="get /openapi.json">client.openapi.<a href="./src/wikibase_rest_stainless/resources/openapi.py">retrieve</a>() -> <a href="./src/wikibase_rest_stainless/types/openapi_retrieve_response.py">object</a></code>
+- <code title="get /openapi.json">client.openapi.<a href="./src/wikibase_rest_stainless/resources/openapi.py">retrieve</a>() -> object</code>
 
 # PropertyDataTypes
 
@@ -97,9 +91,9 @@ from wikibase_rest_stainless.types.entities.items import (
 
 Methods:
 
-- <code title="post /entities/items/{item_id}/statements">client.entities.items.statements.<a href="./src/wikibase_rest_stainless/resources/entities/items/statements.py">create</a>(item_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/items/statement_create_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/items/statement_create_response.py">object</a></code>
-- <code title="get /entities/items/{item_id}/statements/{statement_id}">client.entities.items.statements.<a href="./src/wikibase_rest_stainless/resources/entities/items/statements.py">retrieve</a>(statement_id, \*, item_id) -> <a href="./src/wikibase_rest_stainless/types/entities/items/statement_retrieve_response.py">object</a></code>
-- <code title="patch /entities/items/{item_id}/statements/{statement_id}">client.entities.items.statements.<a href="./src/wikibase_rest_stainless/resources/entities/items/statements.py">update</a>(statement_id, \*, item_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/items/statement_update_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/items/statement_update_response.py">object</a></code>
+- <code title="post /entities/items/{item_id}/statements">client.entities.items.statements.<a href="./src/wikibase_rest_stainless/resources/entities/items/statements.py">create</a>(item_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/items/statement_create_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/items/statement_create_response.py">StatementCreateResponse</a></code>
+- <code title="get /entities/items/{item_id}/statements/{statement_id}">client.entities.items.statements.<a href="./src/wikibase_rest_stainless/resources/entities/items/statements.py">retrieve</a>(statement_id, \*, item_id) -> <a href="./src/wikibase_rest_stainless/types/entities/items/statement_retrieve_response.py">StatementRetrieveResponse</a></code>
+- <code title="patch /entities/items/{item_id}/statements/{statement_id}">client.entities.items.statements.<a href="./src/wikibase_rest_stainless/resources/entities/items/statements.py">update</a>(statement_id, \*, item_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/items/statement_update_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/items/statement_update_response.py">StatementUpdateResponse</a></code>
 - <code title="get /entities/items/{item_id}/statements">client.entities.items.statements.<a href="./src/wikibase_rest_stainless/resources/entities/items/statements.py">list</a>(item_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/items/statement_list_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/items/statement_list_response.py">StatementListResponse</a></code>
 - <code title="delete /entities/items/{item_id}/statements/{statement_id}">client.entities.items.statements.<a href="./src/wikibase_rest_stainless/resources/entities/items/statements.py">delete</a>(statement_id, \*, item_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/items/statement_delete_params.py">params</a>) -> str</code>
 
@@ -234,9 +228,9 @@ from wikibase_rest_stainless.types.entities.properties import (
 
 Methods:
 
-- <code title="post /entities/properties/{property_id}/statements">client.entities.properties.statements.<a href="./src/wikibase_rest_stainless/resources/entities/properties/statements.py">create</a>(property_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/properties/statement_create_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/properties/statement_create_response.py">object</a></code>
-- <code title="get /entities/properties/{property_id}/statements/{statement_id}">client.entities.properties.statements.<a href="./src/wikibase_rest_stainless/resources/entities/properties/statements.py">retrieve</a>(statement_id, \*, property_id) -> <a href="./src/wikibase_rest_stainless/types/entities/properties/statement_retrieve_response.py">object</a></code>
-- <code title="patch /entities/properties/{property_id}/statements/{statement_id}">client.entities.properties.statements.<a href="./src/wikibase_rest_stainless/resources/entities/properties/statements.py">update</a>(statement_id, \*, property_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/properties/statement_update_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/properties/statement_update_response.py">object</a></code>
+- <code title="post /entities/properties/{property_id}/statements">client.entities.properties.statements.<a href="./src/wikibase_rest_stainless/resources/entities/properties/statements.py">create</a>(property_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/properties/statement_create_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/properties/statement_create_response.py">StatementCreateResponse</a></code>
+- <code title="get /entities/properties/{property_id}/statements/{statement_id}">client.entities.properties.statements.<a href="./src/wikibase_rest_stainless/resources/entities/properties/statements.py">retrieve</a>(statement_id, \*, property_id) -> <a href="./src/wikibase_rest_stainless/types/entities/properties/statement_retrieve_response.py">StatementRetrieveResponse</a></code>
+- <code title="patch /entities/properties/{property_id}/statements/{statement_id}">client.entities.properties.statements.<a href="./src/wikibase_rest_stainless/resources/entities/properties/statements.py">update</a>(statement_id, \*, property_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/properties/statement_update_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/properties/statement_update_response.py">StatementUpdateResponse</a></code>
 - <code title="get /entities/properties/{property_id}/statements">client.entities.properties.statements.<a href="./src/wikibase_rest_stainless/resources/entities/properties/statements.py">list</a>(property_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/properties/statement_list_params.py">params</a>) -> <a href="./src/wikibase_rest_stainless/types/entities/properties/statement_list_response.py">StatementListResponse</a></code>
 - <code title="delete /entities/properties/{property_id}/statements/{statement_id}">client.entities.properties.statements.<a href="./src/wikibase_rest_stainless/resources/entities/properties/statements.py">delete</a>(statement_id, \*, property_id, \*\*<a href="src/wikibase_rest_stainless/types/entities/properties/statement_delete_params.py">params</a>) -> str</code>
 

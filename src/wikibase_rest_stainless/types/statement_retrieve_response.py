@@ -5,14 +5,26 @@ from typing_extensions import Literal
 
 from .._models import BaseModel
 
-__all__ = ["StatementRetrieveResponse", "Reference"]
+__all__ = ["StatementRetrieveResponse", "Qualifier", "Reference", "ReferencePart"]
+
+
+class Qualifier(BaseModel):
+    property: object
+
+    value: object
+
+
+class ReferencePart(BaseModel):
+    property: object
+
+    value: object
 
 
 class Reference(BaseModel):
     hash: str
     """Hash of the Reference"""
 
-    parts: List[object]
+    parts: List[ReferencePart]
 
 
 class StatementRetrieveResponse(BaseModel):
@@ -21,7 +33,7 @@ class StatementRetrieveResponse(BaseModel):
 
     property: object
 
-    qualifiers: List[object]
+    qualifiers: List[Qualifier]
 
     rank: Literal["deprecated", "normal", "preferred"]
     """The rank of the Statement"""
