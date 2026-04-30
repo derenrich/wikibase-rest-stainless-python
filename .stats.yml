@@ -1,4 +1,4 @@
 configured_endpoints: 50
-openapi_spec_url: https://storage.googleapis.com/stainless-sdk-openapi-specs/derenrich%2Fpy-wikibase-rest-stainless-a9f0915ffba299c61621d1260069303d701d41d1cd701e4e0634d41febf43633.yml
+openapi_spec_url: https://storage.googleapis.com/stainless-sdk-openapi-specs/derenrich/py-wikibase-rest-stainless-a9f0915ffba299c61621d1260069303d701d41d1cd701e4e0634d41febf43633.yml
 openapi_spec_hash: cf87ecc33738a6c761f3a029ed432e87
 config_hash: 2a47a09436e33b0849eb06c539f6fb1b
