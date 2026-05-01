@@ -1,7 +1,9 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
+import typing as _t
+
 from . import types
-from ._types import NOT_GIVEN, NoneType, NotGiven, Transport, ProxiesTypes
+from ._types import NOT_GIVEN, Omit, NoneType, NotGiven, Transport, ProxiesTypes, omit, not_given
 from ._utils import file_from_path
 from ._client import (
     ENVIRONMENTS,
@@ -35,6 +37,7 @@ from ._exceptions import (
     APIResponseValidationError,
     WikibaseRestStainlessError,
 )
+from ._base_client import DefaultHttpxClient, DefaultAioHttpClient, DefaultAsyncHttpxClient
 from ._utils._logs import setup_logging as _setup_logging
 
 __all__ = [
@@ -46,6 +49,9 @@ __all__ = [
     "ProxiesTypes",
     "NotGiven",
     "NOT_GIVEN",
+    "not_given",
+    "Omit",
+    "omit",
     "WikibaseRestStainlessError",
     "APIError",
     "APIStatusError",
@@ -74,7 +80,13 @@ __all__ = [
     "DEFAULT_TIMEOUT",
     "DEFAULT_MAX_RETRIES",
     "DEFAULT_CONNECTION_LIMITS",
+    "DefaultHttpxClient",
+    "DefaultAsyncHttpxClient",
+    "DefaultAioHttpClient",
 ]
+
+if not _t.TYPE_CHECKING:
+    from ._utils._resources_proxy import resources as resources
 
 _setup_logging()
 

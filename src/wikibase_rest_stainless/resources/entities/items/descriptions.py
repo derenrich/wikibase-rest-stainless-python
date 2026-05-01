@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-from typing import List, Iterable
+from typing import Iterable
 
 import httpx
 
-from ...._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from ...._utils import (
-    maybe_transform,
-    async_maybe_transform,
-)
+from ...._types import Body, Omit, Query, Headers, NotGiven, SequenceNotStr, omit, not_given
+from ...._utils import is_given, path_template, maybe_transform, strip_not_given, async_maybe_transform
 from ...._compat import cached_property
 from ...._resource import SyncAPIResource, AsyncAPIResource
 from ...._response import (
@@ -19,28 +16,35 @@ from ...._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from ...._base_client import (
-    make_request_options,
-)
-from ....types.entities.items import (
-    DescriptionListResponse,
-    DescriptionUpdateResponse,
-    description_create_params,
-    description_delete_params,
-    description_update_params,
-)
+from ...._base_client import make_request_options
+from ....types.entities.items import description_create_params, description_delete_params, description_update_params
+from ....types.entities.items.description_list_response import DescriptionListResponse
+from ....types.entities.items.description_update_response import DescriptionUpdateResponse
 
-__all__ = ["Descriptions", "AsyncDescriptions"]
+__all__ = ["DescriptionsResource", "AsyncDescriptionsResource"]
 
 
-class Descriptions(SyncAPIResource):
-    @cached_property
-    def with_raw_response(self) -> DescriptionsWithRawResponse:
-        return DescriptionsWithRawResponse(self)
+class DescriptionsResource(SyncAPIResource):
+    """Wikibase Descriptions"""
 
     @cached_property
-    def with_streaming_response(self) -> DescriptionsWithStreamingResponse:
-        return DescriptionsWithStreamingResponse(self)
+    def with_raw_response(self) -> DescriptionsResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return DescriptionsResourceWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> DescriptionsResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return DescriptionsResourceWithStreamingResponse(self)
 
     def create(
         self,
@@ -48,15 +52,19 @@ class Descriptions(SyncAPIResource):
         *,
         item_id: str,
         description: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Add / Replace an Item's description in a specific language
@@ -74,8 +82,21 @@ class Descriptions(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._put(
-            f"/entities/items/{item_id}/descriptions/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/descriptions/{language_code}", item_id=item_id, language_code=language_code
+            ),
             body=maybe_transform(
                 {
                     "description": description,
@@ -96,12 +117,16 @@ class Descriptions(SyncAPIResource):
         language_code: str,
         *,
         item_id: str,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Retrieve an Item's description in a specific language
@@ -119,8 +144,21 @@ class Descriptions(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
-            f"/entities/items/{item_id}/descriptions/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/descriptions/{language_code}", item_id=item_id, language_code=language_code
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -132,15 +170,18 @@ class Descriptions(SyncAPIResource):
         item_id: str,
         *,
         patch: Iterable[description_update_params.Patch],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> DescriptionUpdateResponse:
         """
         Change an Item's descriptions
@@ -158,8 +199,18 @@ class Descriptions(SyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._patch(
-            f"/entities/items/{item_id}/descriptions",
+            path_template("/entities/items/{item_id}/descriptions", item_id=item_id),
             body=maybe_transform(
                 {
                     "patch": patch,
@@ -179,12 +230,16 @@ class Descriptions(SyncAPIResource):
         self,
         item_id: str,
         *,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> DescriptionListResponse:
         """
         Retrieve an Item's descriptions
@@ -200,8 +255,19 @@ class Descriptions(SyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
-            f"/entities/items/{item_id}/descriptions",
+            path_template("/entities/items/{item_id}/descriptions", item_id=item_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -213,15 +279,19 @@ class Descriptions(SyncAPIResource):
         language_code: str,
         *,
         item_id: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Delete an Item's description in a specific language
@@ -239,8 +309,21 @@ class Descriptions(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._delete(
-            f"/entities/items/{item_id}/descriptions/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/descriptions/{language_code}", item_id=item_id, language_code=language_code
+            ),
             body=maybe_transform(
                 {
                     "bot": bot,
@@ -256,14 +339,27 @@ class Descriptions(SyncAPIResource):
         )
 
 
-class AsyncDescriptions(AsyncAPIResource):
-    @cached_property
-    def with_raw_response(self) -> AsyncDescriptionsWithRawResponse:
-        return AsyncDescriptionsWithRawResponse(self)
+class AsyncDescriptionsResource(AsyncAPIResource):
+    """Wikibase Descriptions"""
 
     @cached_property
-    def with_streaming_response(self) -> AsyncDescriptionsWithStreamingResponse:
-        return AsyncDescriptionsWithStreamingResponse(self)
+    def with_raw_response(self) -> AsyncDescriptionsResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncDescriptionsResourceWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> AsyncDescriptionsResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return AsyncDescriptionsResourceWithStreamingResponse(self)
 
     async def create(
         self,
@@ -271,15 +367,19 @@ class AsyncDescriptions(AsyncAPIResource):
         *,
         item_id: str,
         description: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Add / Replace an Item's description in a specific language
@@ -297,8 +397,21 @@ class AsyncDescriptions(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._put(
-            f"/entities/items/{item_id}/descriptions/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/descriptions/{language_code}", item_id=item_id, language_code=language_code
+            ),
             body=await async_maybe_transform(
                 {
                     "description": description,
@@ -319,12 +432,16 @@ class AsyncDescriptions(AsyncAPIResource):
         language_code: str,
         *,
         item_id: str,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Retrieve an Item's description in a specific language
@@ -342,8 +459,21 @@ class AsyncDescriptions(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
-            f"/entities/items/{item_id}/descriptions/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/descriptions/{language_code}", item_id=item_id, language_code=language_code
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -355,15 +485,18 @@ class AsyncDescriptions(AsyncAPIResource):
         item_id: str,
         *,
         patch: Iterable[description_update_params.Patch],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> DescriptionUpdateResponse:
         """
         Change an Item's descriptions
@@ -381,8 +514,18 @@ class AsyncDescriptions(AsyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._patch(
-            f"/entities/items/{item_id}/descriptions",
+            path_template("/entities/items/{item_id}/descriptions", item_id=item_id),
             body=await async_maybe_transform(
                 {
                     "patch": patch,
@@ -402,12 +545,16 @@ class AsyncDescriptions(AsyncAPIResource):
         self,
         item_id: str,
         *,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> DescriptionListResponse:
         """
         Retrieve an Item's descriptions
@@ -423,8 +570,19 @@ class AsyncDescriptions(AsyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
-            f"/entities/items/{item_id}/descriptions",
+            path_template("/entities/items/{item_id}/descriptions", item_id=item_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -436,15 +594,19 @@ class AsyncDescriptions(AsyncAPIResource):
         language_code: str,
         *,
         item_id: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Delete an Item's description in a specific language
@@ -462,8 +624,21 @@ class AsyncDescriptions(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._delete(
-            f"/entities/items/{item_id}/descriptions/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/descriptions/{language_code}", item_id=item_id, language_code=language_code
+            ),
             body=await async_maybe_transform(
                 {
                     "bot": bot,
@@ -479,8 +654,8 @@ class AsyncDescriptions(AsyncAPIResource):
         )
 
 
-class DescriptionsWithRawResponse:
-    def __init__(self, descriptions: Descriptions) -> None:
+class DescriptionsResourceWithRawResponse:
+    def __init__(self, descriptions: DescriptionsResource) -> None:
         self._descriptions = descriptions
 
         self.create = to_raw_response_wrapper(
@@ -500,8 +675,8 @@ class DescriptionsWithRawResponse:
         )
 
 
-class AsyncDescriptionsWithRawResponse:
-    def __init__(self, descriptions: AsyncDescriptions) -> None:
+class AsyncDescriptionsResourceWithRawResponse:
+    def __init__(self, descriptions: AsyncDescriptionsResource) -> None:
         self._descriptions = descriptions
 
         self.create = async_to_raw_response_wrapper(
@@ -521,8 +696,8 @@ class AsyncDescriptionsWithRawResponse:
         )
 
 
-class DescriptionsWithStreamingResponse:
-    def __init__(self, descriptions: Descriptions) -> None:
+class DescriptionsResourceWithStreamingResponse:
+    def __init__(self, descriptions: DescriptionsResource) -> None:
         self._descriptions = descriptions
 
         self.create = to_streamed_response_wrapper(
@@ -542,8 +717,8 @@ class DescriptionsWithStreamingResponse:
         )
 
 
-class AsyncDescriptionsWithStreamingResponse:
-    def __init__(self, descriptions: AsyncDescriptions) -> None:
+class AsyncDescriptionsResourceWithStreamingResponse:
+    def __init__(self, descriptions: AsyncDescriptionsResource) -> None:
         self._descriptions = descriptions
 
         self.create = async_to_streamed_response_wrapper(

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
-from typing import List, Iterable
-from typing_extensions import Literal, Required, TypedDict
+from typing import Iterable
+from typing_extensions import Literal, Required, Annotated, TypedDict
+
+from ...._types import SequenceNotStr
+from ...._utils import PropertyInfo
 
 __all__ = ["AliasUpdateParams", "Patch"]
 
@@ -16,14 +19,20 @@ class AliasUpdateParams(TypedDict, total=False):
 
     comment: str
 
-    tags: List[str]
+    tags: SequenceNotStr[str]
+
+    if_match: Annotated[SequenceNotStr[str], PropertyInfo(alias="If-Match")]
+
+    if_none_match: Annotated[SequenceNotStr[str], PropertyInfo(alias="If-None-Match")]
+
+    if_unmodified_since: Annotated[str, PropertyInfo(alias="If-Unmodified-Since")]
 
 
 class Patch(TypedDict, total=False):
     op: Required[Literal["add", "copy", "move", "remove", "replace", "test"]]
     """The operation to perform"""
 
-    path: Required[str]
+    path: Required[object]
     """A JSON Pointer for the property to manipulate"""
 
     value: object

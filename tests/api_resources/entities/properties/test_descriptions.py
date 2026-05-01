@@ -23,8 +23,8 @@ class TestDescriptions:
     @parametrize
     def test_method_create(self, client: WikibaseRestStainless) -> None:
         description = client.entities.properties.descriptions.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             description="an example description",
         )
         assert_matches_type(str, description, path=["response"])
@@ -32,20 +32,24 @@ class TestDescriptions:
     @parametrize
     def test_method_create_with_all_params(self, client: WikibaseRestStainless) -> None:
         description = client.entities.properties.descriptions.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             description="an example description",
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
 
     @parametrize
     def test_raw_response_create(self, client: WikibaseRestStainless) -> None:
         response = client.entities.properties.descriptions.with_raw_response.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             description="an example description",
         )
 
@@ -57,8 +61,8 @@ class TestDescriptions:
     @parametrize
     def test_streaming_response_create(self, client: WikibaseRestStainless) -> None:
         with client.entities.properties.descriptions.with_streaming_response.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             description="an example description",
         ) as response:
             assert not response.is_closed
@@ -73,31 +77,43 @@ class TestDescriptions:
     def test_path_params_create(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             client.entities.properties.descriptions.with_raw_response.create(
-                "string",
+                language_code="en",
                 property_id="",
                 description="an example description",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             client.entities.properties.descriptions.with_raw_response.create(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
                 description="an example description",
             )
 
     @parametrize
     def test_method_retrieve(self, client: WikibaseRestStainless) -> None:
         description = client.entities.properties.descriptions.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
+        )
+        assert_matches_type(str, description, path=["response"])
+
+    @parametrize
+    def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
+        description = client.entities.properties.descriptions.retrieve(
+            language_code="en",
+            property_id="P4699102",
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
 
     @parametrize
     def test_raw_response_retrieve(self, client: WikibaseRestStainless) -> None:
         response = client.entities.properties.descriptions.with_raw_response.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -108,8 +124,8 @@ class TestDescriptions:
     @parametrize
     def test_streaming_response_retrieve(self, client: WikibaseRestStainless) -> None:
         with client.entities.properties.descriptions.with_streaming_response.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -123,33 +139,25 @@ class TestDescriptions:
     def test_path_params_retrieve(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             client.entities.properties.descriptions.with_raw_response.retrieve(
-                "string",
+                language_code="en",
                 property_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             client.entities.properties.descriptions.with_raw_response.retrieve(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
             )
 
     @parametrize
     def test_method_update(self, client: WikibaseRestStainless) -> None:
         description = client.entities.properties.descriptions.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
@@ -157,47 +165,32 @@ class TestDescriptions:
     @parametrize
     def test_method_update_with_all_params(self, client: WikibaseRestStainless) -> None:
         description = client.entities.properties.descriptions.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
+                    "path": {},
                     "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
+                }
             ],
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
 
     @parametrize
     def test_raw_response_update(self, client: WikibaseRestStainless) -> None:
         response = client.entities.properties.descriptions.with_raw_response.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         )
 
@@ -209,20 +202,12 @@ class TestDescriptions:
     @parametrize
     def test_streaming_response_update(self, client: WikibaseRestStainless) -> None:
         with client.entities.properties.descriptions.with_streaming_response.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         ) as response:
             assert not response.is_closed
@@ -237,34 +222,37 @@ class TestDescriptions:
     def test_path_params_update(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             client.entities.properties.descriptions.with_raw_response.update(
-                "",
+                property_id="",
                 patch=[
                     {
                         "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
+                        "path": {},
+                    }
                 ],
             )
 
     @parametrize
     def test_method_list(self, client: WikibaseRestStainless) -> None:
         description = client.entities.properties.descriptions.list(
-            "string",
+            property_id="P4699102",
+        )
+        assert_matches_type(DescriptionListResponse, description, path=["response"])
+
+    @parametrize
+    def test_method_list_with_all_params(self, client: WikibaseRestStainless) -> None:
+        description = client.entities.properties.descriptions.list(
+            property_id="P4699102",
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionListResponse, description, path=["response"])
 
     @parametrize
     def test_raw_response_list(self, client: WikibaseRestStainless) -> None:
         response = client.entities.properties.descriptions.with_raw_response.list(
-            "string",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -275,7 +263,7 @@ class TestDescriptions:
     @parametrize
     def test_streaming_response_list(self, client: WikibaseRestStainless) -> None:
         with client.entities.properties.descriptions.with_streaming_response.list(
-            "string",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -289,33 +277,37 @@ class TestDescriptions:
     def test_path_params_list(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             client.entities.properties.descriptions.with_raw_response.list(
-                "",
+                property_id="",
             )
 
     @parametrize
     def test_method_delete(self, client: WikibaseRestStainless) -> None:
         description = client.entities.properties.descriptions.delete(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         )
         assert_matches_type(str, description, path=["response"])
 
     @parametrize
     def test_method_delete_with_all_params(self, client: WikibaseRestStainless) -> None:
         description = client.entities.properties.descriptions.delete(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
 
     @parametrize
     def test_raw_response_delete(self, client: WikibaseRestStainless) -> None:
         response = client.entities.properties.descriptions.with_raw_response.delete(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -326,8 +318,8 @@ class TestDescriptions:
     @parametrize
     def test_streaming_response_delete(self, client: WikibaseRestStainless) -> None:
         with client.entities.properties.descriptions.with_streaming_response.delete(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -341,25 +333,27 @@ class TestDescriptions:
     def test_path_params_delete(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             client.entities.properties.descriptions.with_raw_response.delete(
-                "string",
+                language_code="en",
                 property_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             client.entities.properties.descriptions.with_raw_response.delete(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
             )
 
 
 class TestAsyncDescriptions:
-    parametrize = pytest.mark.parametrize("async_client", [False, True], indirect=True, ids=["loose", "strict"])
+    parametrize = pytest.mark.parametrize(
+        "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
+    )
 
     @parametrize
     async def test_method_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.properties.descriptions.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             description="an example description",
         )
         assert_matches_type(str, description, path=["response"])
@@ -367,20 +361,24 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_method_create_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.properties.descriptions.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             description="an example description",
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
 
     @parametrize
     async def test_raw_response_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.properties.descriptions.with_raw_response.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             description="an example description",
         )
 
@@ -392,8 +390,8 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_streaming_response_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.properties.descriptions.with_streaming_response.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             description="an example description",
         ) as response:
             assert not response.is_closed
@@ -408,31 +406,43 @@ class TestAsyncDescriptions:
     async def test_path_params_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             await async_client.entities.properties.descriptions.with_raw_response.create(
-                "string",
+                language_code="en",
                 property_id="",
                 description="an example description",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             await async_client.entities.properties.descriptions.with_raw_response.create(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
                 description="an example description",
             )
 
     @parametrize
     async def test_method_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.properties.descriptions.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
+        )
+        assert_matches_type(str, description, path=["response"])
+
+    @parametrize
+    async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
+        description = await async_client.entities.properties.descriptions.retrieve(
+            language_code="en",
+            property_id="P4699102",
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
 
     @parametrize
     async def test_raw_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.properties.descriptions.with_raw_response.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -443,8 +453,8 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_streaming_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.properties.descriptions.with_streaming_response.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -458,33 +468,25 @@ class TestAsyncDescriptions:
     async def test_path_params_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             await async_client.entities.properties.descriptions.with_raw_response.retrieve(
-                "string",
+                language_code="en",
                 property_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             await async_client.entities.properties.descriptions.with_raw_response.retrieve(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
             )
 
     @parametrize
     async def test_method_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.properties.descriptions.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
@@ -492,47 +494,32 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_method_update_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.properties.descriptions.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
+                    "path": {},
                     "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
+                }
             ],
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionUpdateResponse, description, path=["response"])
 
     @parametrize
     async def test_raw_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.properties.descriptions.with_raw_response.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         )
 
@@ -544,20 +531,12 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_streaming_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.properties.descriptions.with_streaming_response.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         ) as response:
             assert not response.is_closed
@@ -572,34 +551,37 @@ class TestAsyncDescriptions:
     async def test_path_params_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             await async_client.entities.properties.descriptions.with_raw_response.update(
-                "",
+                property_id="",
                 patch=[
                     {
                         "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
+                        "path": {},
+                    }
                 ],
             )
 
     @parametrize
     async def test_method_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.properties.descriptions.list(
-            "string",
+            property_id="P4699102",
+        )
+        assert_matches_type(DescriptionListResponse, description, path=["response"])
+
+    @parametrize
+    async def test_method_list_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
+        description = await async_client.entities.properties.descriptions.list(
+            property_id="P4699102",
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(DescriptionListResponse, description, path=["response"])
 
     @parametrize
     async def test_raw_response_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.properties.descriptions.with_raw_response.list(
-            "string",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -610,7 +592,7 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_streaming_response_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.properties.descriptions.with_streaming_response.list(
-            "string",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -624,33 +606,37 @@ class TestAsyncDescriptions:
     async def test_path_params_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             await async_client.entities.properties.descriptions.with_raw_response.list(
-                "",
+                property_id="",
             )
 
     @parametrize
     async def test_method_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.properties.descriptions.delete(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         )
         assert_matches_type(str, description, path=["response"])
 
     @parametrize
     async def test_method_delete_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         description = await async_client.entities.properties.descriptions.delete(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(str, description, path=["response"])
 
     @parametrize
     async def test_raw_response_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.properties.descriptions.with_raw_response.delete(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -661,8 +647,8 @@ class TestAsyncDescriptions:
     @parametrize
     async def test_streaming_response_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.properties.descriptions.with_streaming_response.delete(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -676,12 +662,12 @@ class TestAsyncDescriptions:
     async def test_path_params_delete(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             await async_client.entities.properties.descriptions.with_raw_response.delete(
-                "string",
+                language_code="en",
                 property_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             await async_client.entities.properties.descriptions.with_raw_response.delete(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
             )

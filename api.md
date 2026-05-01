@@ -1,14 +1,8 @@
-# Openapi
-
-Types:
-
-```python
-from wikibase_rest_stainless.types import OpenapiRetrieveResponse
-```
+# OpenAPI
 
 Methods:
 
-- <code title="get /openapi.json">client.openapi.<a href="./src/wikibase_rest_stainless/resources/openapi.py">retrieve</a>() -> <a href="./src/wikibase_rest_stainless/types/openapi_retrieve_response.py">object</a></code>
+- <code title="get /openapi.json">client.openapi.<a href="./src/wikibase_rest_stainless/resources/openapi.py">retrieve</a>() -> object</code>
 
 # PropertyDataTypes
 

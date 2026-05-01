@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from typing import List
-from typing_extensions import TypedDict
+from typing_extensions import Annotated, TypedDict
+
+from .._types import SequenceNotStr
+from .._utils import PropertyInfo
 
 __all__ = ["StatementDeleteParams"]
 
@@ -13,4 +15,10 @@ class StatementDeleteParams(TypedDict, total=False):
 
     comment: str
 
-    tags: List[str]
+    tags: SequenceNotStr[str]
+
+    if_match: Annotated[SequenceNotStr[str], PropertyInfo(alias="If-Match")]
+
+    if_none_match: Annotated[SequenceNotStr[str], PropertyInfo(alias="If-None-Match")]
+
+    if_unmodified_since: Annotated[str, PropertyInfo(alias="If-Unmodified-Since")]

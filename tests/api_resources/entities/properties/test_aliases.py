@@ -25,8 +25,8 @@ class TestAliases:
     @parametrize
     def test_method_create(self, client: WikibaseRestStainless) -> None:
         alias = client.entities.properties.aliases.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             aliases=["alias-1", "alias-2"],
         )
         assert_matches_type(AliasCreateResponse, alias, path=["response"])
@@ -34,20 +34,24 @@ class TestAliases:
     @parametrize
     def test_method_create_with_all_params(self, client: WikibaseRestStainless) -> None:
         alias = client.entities.properties.aliases.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             aliases=["alias-1", "alias-2"],
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(AliasCreateResponse, alias, path=["response"])
 
     @parametrize
     def test_raw_response_create(self, client: WikibaseRestStainless) -> None:
         response = client.entities.properties.aliases.with_raw_response.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             aliases=["alias-1", "alias-2"],
         )
 
@@ -59,8 +63,8 @@ class TestAliases:
     @parametrize
     def test_streaming_response_create(self, client: WikibaseRestStainless) -> None:
         with client.entities.properties.aliases.with_streaming_response.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             aliases=["alias-1", "alias-2"],
         ) as response:
             assert not response.is_closed
@@ -75,31 +79,43 @@ class TestAliases:
     def test_path_params_create(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             client.entities.properties.aliases.with_raw_response.create(
-                "string",
+                language_code="en",
                 property_id="",
                 aliases=["alias-1", "alias-2"],
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             client.entities.properties.aliases.with_raw_response.create(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
                 aliases=["alias-1", "alias-2"],
             )
 
     @parametrize
     def test_method_retrieve(self, client: WikibaseRestStainless) -> None:
         alias = client.entities.properties.aliases.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
+        )
+        assert_matches_type(AliasRetrieveResponse, alias, path=["response"])
+
+    @parametrize
+    def test_method_retrieve_with_all_params(self, client: WikibaseRestStainless) -> None:
+        alias = client.entities.properties.aliases.retrieve(
+            language_code="en",
+            property_id="P4699102",
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(AliasRetrieveResponse, alias, path=["response"])
 
     @parametrize
     def test_raw_response_retrieve(self, client: WikibaseRestStainless) -> None:
         response = client.entities.properties.aliases.with_raw_response.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -110,8 +126,8 @@ class TestAliases:
     @parametrize
     def test_streaming_response_retrieve(self, client: WikibaseRestStainless) -> None:
         with client.entities.properties.aliases.with_streaming_response.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -125,33 +141,25 @@ class TestAliases:
     def test_path_params_retrieve(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             client.entities.properties.aliases.with_raw_response.retrieve(
-                "string",
+                language_code="en",
                 property_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             client.entities.properties.aliases.with_raw_response.retrieve(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
             )
 
     @parametrize
     def test_method_update(self, client: WikibaseRestStainless) -> None:
         alias = client.entities.properties.aliases.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         )
         assert_matches_type(AliasUpdateResponse, alias, path=["response"])
@@ -159,47 +167,32 @@ class TestAliases:
     @parametrize
     def test_method_update_with_all_params(self, client: WikibaseRestStainless) -> None:
         alias = client.entities.properties.aliases.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
+                    "path": {},
                     "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
+                }
             ],
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(AliasUpdateResponse, alias, path=["response"])
 
     @parametrize
     def test_raw_response_update(self, client: WikibaseRestStainless) -> None:
         response = client.entities.properties.aliases.with_raw_response.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         )
 
@@ -211,20 +204,12 @@ class TestAliases:
     @parametrize
     def test_streaming_response_update(self, client: WikibaseRestStainless) -> None:
         with client.entities.properties.aliases.with_streaming_response.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         ) as response:
             assert not response.is_closed
@@ -239,34 +224,37 @@ class TestAliases:
     def test_path_params_update(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             client.entities.properties.aliases.with_raw_response.update(
-                "",
+                property_id="",
                 patch=[
                     {
                         "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
+                        "path": {},
+                    }
                 ],
             )
 
     @parametrize
     def test_method_list(self, client: WikibaseRestStainless) -> None:
         alias = client.entities.properties.aliases.list(
-            "string",
+            property_id="P4699102",
+        )
+        assert_matches_type(AliasListResponse, alias, path=["response"])
+
+    @parametrize
+    def test_method_list_with_all_params(self, client: WikibaseRestStainless) -> None:
+        alias = client.entities.properties.aliases.list(
+            property_id="P4699102",
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(AliasListResponse, alias, path=["response"])
 
     @parametrize
     def test_raw_response_list(self, client: WikibaseRestStainless) -> None:
         response = client.entities.properties.aliases.with_raw_response.list(
-            "string",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -277,7 +265,7 @@ class TestAliases:
     @parametrize
     def test_streaming_response_list(self, client: WikibaseRestStainless) -> None:
         with client.entities.properties.aliases.with_streaming_response.list(
-            "string",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -291,18 +279,20 @@ class TestAliases:
     def test_path_params_list(self, client: WikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             client.entities.properties.aliases.with_raw_response.list(
-                "",
+                property_id="",
             )
 
 
 class TestAsyncAliases:
-    parametrize = pytest.mark.parametrize("async_client", [False, True], indirect=True, ids=["loose", "strict"])
+    parametrize = pytest.mark.parametrize(
+        "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
+    )
 
     @parametrize
     async def test_method_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         alias = await async_client.entities.properties.aliases.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             aliases=["alias-1", "alias-2"],
         )
         assert_matches_type(AliasCreateResponse, alias, path=["response"])
@@ -310,20 +300,24 @@ class TestAsyncAliases:
     @parametrize
     async def test_method_create_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         alias = await async_client.entities.properties.aliases.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             aliases=["alias-1", "alias-2"],
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(AliasCreateResponse, alias, path=["response"])
 
     @parametrize
     async def test_raw_response_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.properties.aliases.with_raw_response.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             aliases=["alias-1", "alias-2"],
         )
 
@@ -335,8 +329,8 @@ class TestAsyncAliases:
     @parametrize
     async def test_streaming_response_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.properties.aliases.with_streaming_response.create(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
             aliases=["alias-1", "alias-2"],
         ) as response:
             assert not response.is_closed
@@ -351,31 +345,43 @@ class TestAsyncAliases:
     async def test_path_params_create(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             await async_client.entities.properties.aliases.with_raw_response.create(
-                "string",
+                language_code="en",
                 property_id="",
                 aliases=["alias-1", "alias-2"],
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             await async_client.entities.properties.aliases.with_raw_response.create(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
                 aliases=["alias-1", "alias-2"],
             )
 
     @parametrize
     async def test_method_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         alias = await async_client.entities.properties.aliases.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
+        )
+        assert_matches_type(AliasRetrieveResponse, alias, path=["response"])
+
+    @parametrize
+    async def test_method_retrieve_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
+        alias = await async_client.entities.properties.aliases.retrieve(
+            language_code="en",
+            property_id="P4699102",
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(AliasRetrieveResponse, alias, path=["response"])
 
     @parametrize
     async def test_raw_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.properties.aliases.with_raw_response.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -386,8 +392,8 @@ class TestAsyncAliases:
     @parametrize
     async def test_streaming_response_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.properties.aliases.with_streaming_response.retrieve(
-            "string",
-            property_id="string",
+            language_code="en",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -401,33 +407,25 @@ class TestAsyncAliases:
     async def test_path_params_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             await async_client.entities.properties.aliases.with_raw_response.retrieve(
-                "string",
+                language_code="en",
                 property_id="",
             )
 
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `language_code` but received ''"):
             await async_client.entities.properties.aliases.with_raw_response.retrieve(
-                "",
-                property_id="string",
+                language_code="",
+                property_id="P4699102",
             )
 
     @parametrize
     async def test_method_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         alias = await async_client.entities.properties.aliases.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         )
         assert_matches_type(AliasUpdateResponse, alias, path=["response"])
@@ -435,47 +433,32 @@ class TestAsyncAliases:
     @parametrize
     async def test_method_update_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
         alias = await async_client.entities.properties.aliases.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
+                    "path": {},
                     "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                    "value": {},
-                },
+                }
             ],
             bot=True,
             comment="API edit fixing the modelling as discussed in ...",
             tags=["mobile edit", "external tool edit"],
+            if_match=["*"],
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(AliasUpdateResponse, alias, path=["response"])
 
     @parametrize
     async def test_raw_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.properties.aliases.with_raw_response.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         )
 
@@ -487,20 +470,12 @@ class TestAsyncAliases:
     @parametrize
     async def test_streaming_response_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.properties.aliases.with_streaming_response.update(
-            "string",
+            property_id="P4699102",
             patch=[
                 {
                     "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
-                {
-                    "op": "replace",
-                    "path": "string",
-                },
+                    "path": {},
+                }
             ],
         ) as response:
             assert not response.is_closed
@@ -515,34 +490,37 @@ class TestAsyncAliases:
     async def test_path_params_update(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             await async_client.entities.properties.aliases.with_raw_response.update(
-                "",
+                property_id="",
                 patch=[
                     {
                         "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
-                    {
-                        "op": "replace",
-                        "path": "string",
-                    },
+                        "path": {},
+                    }
                 ],
             )
 
     @parametrize
     async def test_method_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         alias = await async_client.entities.properties.aliases.list(
-            "string",
+            property_id="P4699102",
+        )
+        assert_matches_type(AliasListResponse, alias, path=["response"])
+
+    @parametrize
+    async def test_method_list_with_all_params(self, async_client: AsyncWikibaseRestStainless) -> None:
+        alias = await async_client.entities.properties.aliases.list(
+            property_id="P4699102",
+            if_match=["*"],
+            if_modified_since="Sat, 06 Jun 2020 16:38:47 GMT",
+            if_none_match=["*"],
+            if_unmodified_since="Sat, 06 Jun 2020 16:38:47 GMT",
         )
         assert_matches_type(AliasListResponse, alias, path=["response"])
 
     @parametrize
     async def test_raw_response_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         response = await async_client.entities.properties.aliases.with_raw_response.list(
-            "string",
+            property_id="P4699102",
         )
 
         assert response.is_closed is True
@@ -553,7 +531,7 @@ class TestAsyncAliases:
     @parametrize
     async def test_streaming_response_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         async with async_client.entities.properties.aliases.with_streaming_response.list(
-            "string",
+            property_id="P4699102",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -567,5 +545,5 @@ class TestAsyncAliases:
     async def test_path_params_list(self, async_client: AsyncWikibaseRestStainless) -> None:
         with pytest.raises(ValueError, match=r"Expected a non-empty value for `property_id` but received ''"):
             await async_client.entities.properties.aliases.with_raw_response.list(
-                "",
+                property_id="",
             )

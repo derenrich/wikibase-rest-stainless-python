@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import gc
 import os
+import sys
 import json
 import asyncio
 import inspect
+import dataclasses
 import tracemalloc
-from typing import Any, Union, cast
+from typing import Any, Union, TypeVar, Callable, Iterable, Iterator, Optional, Coroutine, cast
 from unittest import mock
+from typing_extensions import Literal, AsyncIterator, override
 
 import httpx
 import pytest
@@ -17,9 +20,9 @@ from respx import MockRouter
 from pydantic import ValidationError
 
 from wikibase_rest_stainless import WikibaseRestStainless, APIResponseValidationError, AsyncWikibaseRestStainless
-from wikibase_rest_stainless._client import WikibaseRestStainless, AsyncWikibaseRestStainless
+from wikibase_rest_stainless._types import Omit
+from wikibase_rest_stainless._utils import asyncify
 from wikibase_rest_stainless._models import BaseModel, FinalRequestOptions
-from wikibase_rest_stainless._constants import RAW_RESPONSE_HEADER
 from wikibase_rest_stainless._exceptions import (
     APIStatusError,
     APITimeoutError,
@@ -30,11 +33,16 @@ from wikibase_rest_stainless._base_client import (
     DEFAULT_TIMEOUT,
     HTTPX_DEFAULT_TIMEOUT,
     BaseClient,
+    OtherPlatform,
+    DefaultHttpxClient,
+    DefaultAsyncHttpxClient,
+    get_platform,
     make_request_options,
 )
 
 from .utils import update_env
 
+T = TypeVar("T")
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 access_token = "My Access Token"
 
@@ -49,6 +57,57 @@ def _low_retry_timeout(*_args: Any, **_kwargs: Any) -> float:
     return 0.1
 
 
+def mirror_request_content(request: httpx.Request) -> httpx.Response:
+    return httpx.Response(200, content=request.content)
+
+
+# note: we can't use the httpx.MockTransport class as it consumes the request
+#       body itself, which means we can't test that the body is read lazily
+class MockTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
+    def __init__(
+        self,
+        handler: Callable[[httpx.Request], httpx.Response]
+        | Callable[[httpx.Request], Coroutine[Any, Any, httpx.Response]],
+    ) -> None:
+        self.handler = handler
+
+    @override
+    def handle_request(
+        self,
+        request: httpx.Request,
+    ) -> httpx.Response:
+        assert not inspect.iscoroutinefunction(self.handler), "handler must not be a coroutine function"
+        assert inspect.isfunction(self.handler), "handler must be a function"
+        return self.handler(request)
+
+    @override
+    async def handle_async_request(
+        self,
+        request: httpx.Request,
+    ) -> httpx.Response:
+        assert inspect.iscoroutinefunction(self.handler), "handler must be a coroutine function"
+        return await self.handler(request)
+
+
+@dataclasses.dataclass
+class Counter:
+    value: int = 0
+
+
+def _make_sync_iterator(iterable: Iterable[T], counter: Optional[Counter] = None) -> Iterator[T]:
+    for item in iterable:
+        if counter:
+            counter.value += 1
+        yield item
+
+
+async def _make_async_iterator(iterable: Iterable[T], counter: Optional[Counter] = None) -> AsyncIterator[T]:
+    for item in iterable:
+        if counter:
+            counter.value += 1
+        yield item
+
+
 def _get_open_connections(client: WikibaseRestStainless | AsyncWikibaseRestStainless) -> int:
     transport = client._client._transport
     assert isinstance(transport, httpx.HTTPTransport) or isinstance(transport, httpx.AsyncHTTPTransport)
@@ -58,51 +117,49 @@ def _get_open_connections(client: WikibaseRestStainless | AsyncWikibaseRestStain
 
 
 class TestWikibaseRestStainless:
-    client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
-
     @pytest.mark.respx(base_url=base_url)
-    def test_raw_response(self, respx_mock: MockRouter) -> None:
+    def test_raw_response(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
         respx_mock.post("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
 
-        response = self.client.post("/foo", cast_to=httpx.Response)
+        response = client.post("/foo", cast_to=httpx.Response)
         assert response.status_code == 200
         assert isinstance(response, httpx.Response)
         assert response.json() == {"foo": "bar"}
 
     @pytest.mark.respx(base_url=base_url)
-    def test_raw_response_for_binary(self, respx_mock: MockRouter) -> None:
+    def test_raw_response_for_binary(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
         respx_mock.post("/foo").mock(
             return_value=httpx.Response(200, headers={"Content-Type": "application/binary"}, content='{"foo": "bar"}')
         )
 
-        response = self.client.post("/foo", cast_to=httpx.Response)
+        response = client.post("/foo", cast_to=httpx.Response)
         assert response.status_code == 200
         assert isinstance(response, httpx.Response)
         assert response.json() == {"foo": "bar"}
 
-    def test_copy(self) -> None:
-        copied = self.client.copy()
-        assert id(copied) != id(self.client)
+    def test_copy(self, client: WikibaseRestStainless) -> None:
+        copied = client.copy()
+        assert id(copied) != id(client)
 
-        copied = self.client.copy(access_token="another My Access Token")
+        copied = client.copy(access_token="another My Access Token")
         assert copied.access_token == "another My Access Token"
-        assert self.client.access_token == "My Access Token"
+        assert client.access_token == "My Access Token"
 
-    def test_copy_default_options(self) -> None:
+    def test_copy_default_options(self, client: WikibaseRestStainless) -> None:
         # options that have a default are overridden correctly
-        copied = self.client.copy(max_retries=7)
+        copied = client.copy(max_retries=7)
         assert copied.max_retries == 7
-        assert self.client.max_retries == 2
+        assert client.max_retries == 2
 
         copied2 = copied.copy(max_retries=6)
         assert copied2.max_retries == 6
         assert copied.max_retries == 7
 
         # timeout
-        assert isinstance(self.client.timeout, httpx.Timeout)
-        copied = self.client.copy(timeout=None)
+        assert isinstance(client.timeout, httpx.Timeout)
+        copied = client.copy(timeout=None)
         assert copied.timeout is None
-        assert isinstance(self.client.timeout, httpx.Timeout)
+        assert isinstance(client.timeout, httpx.Timeout)
 
     def test_copy_default_headers(self) -> None:
         client = WikibaseRestStainless(
@@ -140,6 +197,7 @@ class TestWikibaseRestStainless:
             match="`default_headers` and `set_default_headers` arguments are mutually exclusive",
         ):
             client.copy(set_default_headers={}, default_headers={"X-Foo": "Bar"})
+        client.close()
 
     def test_copy_default_query(self) -> None:
         client = WikibaseRestStainless(
@@ -177,13 +235,15 @@ class TestWikibaseRestStainless:
         ):
             client.copy(set_default_query={}, default_query={"foo": "Bar"})
 
-    def test_copy_signature(self) -> None:
+        client.close()
+
+    def test_copy_signature(self, client: WikibaseRestStainless) -> None:
         # ensure the same parameters that can be passed to the client are defined in the `.copy()` method
         init_signature = inspect.signature(
             # mypy doesn't like that we access the `__init__` property.
-            self.client.__init__,  # type: ignore[misc]
+            client.__init__,  # type: ignore[misc]
         )
-        copy_signature = inspect.signature(self.client.copy)
+        copy_signature = inspect.signature(client.copy)
         exclude_params = {"transport", "proxies", "_strict_response_validation"}
 
         for name in init_signature.parameters.keys():
@@ -193,12 +253,13 @@ class TestWikibaseRestStainless:
             copy_param = copy_signature.parameters.get(name)
             assert copy_param is not None, f"copy() signature is missing the {name} param"
 
-    def test_copy_build_request(self) -> None:
+    @pytest.mark.skipif(sys.version_info >= (3, 10), reason="fails because of a memory leak that started from 3.12")
+    def test_copy_build_request(self, client: WikibaseRestStainless) -> None:
         options = FinalRequestOptions(method="get", url="/foo")
 
         def build_request(options: FinalRequestOptions) -> None:
-            client = self.client.copy()
-            client._build_request(options)
+            client_copy = client.copy()
+            client_copy._build_request(options)
 
         # ensure that the machinery is warmed up before tracing starts.
         build_request(options)
@@ -255,14 +316,12 @@ class TestWikibaseRestStainless:
                     print(frame)
             raise AssertionError()
 
-    def test_request_timeout(self) -> None:
-        request = self.client._build_request(FinalRequestOptions(method="get", url="/foo"))
+    def test_request_timeout(self, client: WikibaseRestStainless) -> None:
+        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
         timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
         assert timeout == DEFAULT_TIMEOUT
 
-        request = self.client._build_request(
-            FinalRequestOptions(method="get", url="/foo", timeout=httpx.Timeout(100.0))
-        )
+        request = client._build_request(FinalRequestOptions(method="get", url="/foo", timeout=httpx.Timeout(100.0)))
         timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
         assert timeout == httpx.Timeout(100.0)
 
@@ -275,6 +334,8 @@ class TestWikibaseRestStainless:
         timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
         assert timeout == httpx.Timeout(0)
 
+        client.close()
+
     def test_http_client_timeout_option(self) -> None:
         # custom timeout given to the httpx client should be used
         with httpx.Client(timeout=None) as http_client:
@@ -286,6 +347,8 @@ class TestWikibaseRestStainless:
             timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
             assert timeout == httpx.Timeout(None)
 
+            client.close()
+
         # no timeout given to the httpx client should not use the httpx default
         with httpx.Client() as http_client:
             client = WikibaseRestStainless(
@@ -296,6 +359,8 @@ class TestWikibaseRestStainless:
             timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
             assert timeout == DEFAULT_TIMEOUT
 
+            client.close()
+
         # explicitly passing the default timeout currently results in it being ignored
         with httpx.Client(timeout=HTTPX_DEFAULT_TIMEOUT) as http_client:
             client = WikibaseRestStainless(
@@ -305,6 +370,8 @@ class TestWikibaseRestStainless:
             request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
             timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
             assert timeout == DEFAULT_TIMEOUT  # our default
+
+            client.close()
 
     async def test_invalid_http_client(self) -> None:
         with pytest.raises(TypeError, match="Invalid `http_client` arg"):
@@ -317,17 +384,17 @@ class TestWikibaseRestStainless:
                 )
 
     def test_default_headers_option(self) -> None:
-        client = WikibaseRestStainless(
+        test_client = WikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
             default_headers={"X-Foo": "bar"},
         )
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
+        request = test_client._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "bar"
         assert request.headers.get("x-stainless-lang") == "python"
 
-        client2 = WikibaseRestStainless(
+        test_client2 = WikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -336,9 +403,12 @@ class TestWikibaseRestStainless:
                 "X-Stainless-Lang": "my-overriding-header",
             },
         )
-        request = client2._build_request(FinalRequestOptions(method="get", url="/foo"))
+        request = test_client2._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "stainless"
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
+
+        test_client.close()
+        test_client2.close()
 
     def test_validate_headers(self) -> None:
         client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
@@ -346,7 +416,8 @@ class TestWikibaseRestStainless:
         assert request.headers.get("Authorization") == f"Bearer {access_token}"
 
         with pytest.raises(WikibaseRestStainlessError):
-            client2 = WikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
+            with update_env(**{"WIKIBASE_BEARER_TOKEN": Omit()}):
+                client2 = WikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
             _ = client2
 
     def test_default_query_option(self) -> None:
@@ -364,14 +435,40 @@ class TestWikibaseRestStainless:
             FinalRequestOptions(
                 method="get",
                 url="/foo",
-                params={"foo": "baz", "query_param": "overriden"},
+                params={"foo": "baz", "query_param": "overridden"},
             )
         )
         url = httpx.URL(request.url)
-        assert dict(url.params) == {"foo": "baz", "query_param": "overriden"}
+        assert dict(url.params) == {"foo": "baz", "query_param": "overridden"}
 
-    def test_request_extra_json(self) -> None:
-        request = self.client._build_request(
+        client.close()
+
+    def test_hardcoded_query_params_in_url(self, client: WikibaseRestStainless) -> None:
+        request = client._build_request(FinalRequestOptions(method="get", url="/foo?beta=true"))
+        url = httpx.URL(request.url)
+        assert dict(url.params) == {"beta": "true"}
+
+        request = client._build_request(
+            FinalRequestOptions(
+                method="get",
+                url="/foo?beta=true",
+                params={"limit": "10", "page": "abc"},
+            )
+        )
+        url = httpx.URL(request.url)
+        assert dict(url.params) == {"beta": "true", "limit": "10", "page": "abc"}
+
+        request = client._build_request(
+            FinalRequestOptions(
+                method="get",
+                url="/files/a%2Fb?beta=true",
+                params={"limit": "10"},
+            )
+        )
+        assert request.url.raw_path == b"/files/a%2Fb?beta=true&limit=10"
+
+    def test_request_extra_json(self, client: WikibaseRestStainless) -> None:
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -382,7 +479,7 @@ class TestWikibaseRestStainless:
         data = json.loads(request.content.decode("utf-8"))
         assert data == {"foo": "bar", "baz": False}
 
-        request = self.client._build_request(
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -393,7 +490,7 @@ class TestWikibaseRestStainless:
         assert data == {"baz": False}
 
         # `extra_json` takes priority over `json_data` when keys clash
-        request = self.client._build_request(
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -404,8 +501,8 @@ class TestWikibaseRestStainless:
         data = json.loads(request.content.decode("utf-8"))
         assert data == {"foo": "bar", "baz": None}
 
-    def test_request_extra_headers(self) -> None:
-        request = self.client._build_request(
+    def test_request_extra_headers(self, client: WikibaseRestStainless) -> None:
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -415,7 +512,7 @@ class TestWikibaseRestStainless:
         assert request.headers.get("X-Foo") == "Foo"
 
         # `extra_headers` takes priority over `default_headers` when keys clash
-        request = self.client.with_options(default_headers={"X-Bar": "true"})._build_request(
+        request = client.with_options(default_headers={"X-Bar": "true"})._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -426,8 +523,8 @@ class TestWikibaseRestStainless:
         )
         assert request.headers.get("X-Bar") == "false"
 
-    def test_request_extra_query(self) -> None:
-        request = self.client._build_request(
+    def test_request_extra_query(self, client: WikibaseRestStainless) -> None:
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -440,7 +537,7 @@ class TestWikibaseRestStainless:
         assert params == {"my_query_param": "Foo"}
 
         # if both `query` and `extra_query` are given, they are merged
-        request = self.client._build_request(
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -454,7 +551,7 @@ class TestWikibaseRestStainless:
         assert params == {"bar": "1", "foo": "2"}
 
         # `extra_query` takes priority over `query` when keys clash
-        request = self.client._build_request(
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -470,7 +567,7 @@ class TestWikibaseRestStainless:
     def test_multipart_repeating_array(self, client: WikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions.construct(
-                method="get",
+                method="post",
                 url="/foo",
                 headers={"Content-Type": "multipart/form-data; boundary=6b7ba517decee4a450543ea6ae821c82"},
                 json_data={"array": ["foo", "bar"]},
@@ -497,7 +594,73 @@ class TestWikibaseRestStainless:
         ]
 
     @pytest.mark.respx(base_url=base_url)
-    def test_basic_union_response(self, respx_mock: MockRouter) -> None:
+    def test_binary_content_upload(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
+        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
+
+        file_content = b"Hello, this is a test file."
+
+        response = client.post(
+            "/upload",
+            content=file_content,
+            cast_to=httpx.Response,
+            options={"headers": {"Content-Type": "application/octet-stream"}},
+        )
+
+        assert response.status_code == 200
+        assert response.request.headers["Content-Type"] == "application/octet-stream"
+        assert response.content == file_content
+
+    def test_binary_content_upload_with_iterator(self) -> None:
+        file_content = b"Hello, this is a test file."
+        counter = Counter()
+        iterator = _make_sync_iterator([file_content], counter=counter)
+
+        def mock_handler(request: httpx.Request) -> httpx.Response:
+            assert counter.value == 0, "the request body should not have been read"
+            return httpx.Response(200, content=request.read())
+
+        with WikibaseRestStainless(
+            base_url=base_url,
+            access_token=access_token,
+            _strict_response_validation=True,
+            http_client=httpx.Client(transport=MockTransport(handler=mock_handler)),
+        ) as client:
+            response = client.post(
+                "/upload",
+                content=iterator,
+                cast_to=httpx.Response,
+                options={"headers": {"Content-Type": "application/octet-stream"}},
+            )
+
+            assert response.status_code == 200
+            assert response.request.headers["Content-Type"] == "application/octet-stream"
+            assert response.content == file_content
+            assert counter.value == 1
+
+    @pytest.mark.respx(base_url=base_url)
+    def test_binary_content_upload_with_body_is_deprecated(
+        self, respx_mock: MockRouter, client: WikibaseRestStainless
+    ) -> None:
+        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
+
+        file_content = b"Hello, this is a test file."
+
+        with pytest.deprecated_call(
+            match="Passing raw bytes as `body` is deprecated and will be removed in a future version. Please pass raw bytes via the `content` parameter instead."
+        ):
+            response = client.post(
+                "/upload",
+                body=file_content,
+                cast_to=httpx.Response,
+                options={"headers": {"Content-Type": "application/octet-stream"}},
+            )
+
+        assert response.status_code == 200
+        assert response.request.headers["Content-Type"] == "application/octet-stream"
+        assert response.content == file_content
+
+    @pytest.mark.respx(base_url=base_url)
+    def test_basic_union_response(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
         class Model1(BaseModel):
             name: str
 
@@ -506,12 +669,12 @@ class TestWikibaseRestStainless:
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
 
-        response = self.client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
+        response = client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
         assert isinstance(response, Model2)
         assert response.foo == "bar"
 
     @pytest.mark.respx(base_url=base_url)
-    def test_union_response_different_types(self, respx_mock: MockRouter) -> None:
+    def test_union_response_different_types(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
         """Union of objects with the same field name using a different type"""
 
         class Model1(BaseModel):
@@ -522,18 +685,20 @@ class TestWikibaseRestStainless:
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
 
-        response = self.client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
+        response = client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
         assert isinstance(response, Model2)
         assert response.foo == "bar"
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": 1}))
 
-        response = self.client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
+        response = client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
         assert isinstance(response, Model1)
         assert response.foo == 1
 
     @pytest.mark.respx(base_url=base_url)
-    def test_non_application_json_content_type_for_json_data(self, respx_mock: MockRouter) -> None:
+    def test_non_application_json_content_type_for_json_data(
+        self, respx_mock: MockRouter, client: WikibaseRestStainless
+    ) -> None:
         """
         Response that sets Content-Type to something other than application/json but returns json data
         """
@@ -549,7 +714,7 @@ class TestWikibaseRestStainless:
             )
         )
 
-        response = self.client.get("/foo", cast_to=Model)
+        response = client.get("/foo", cast_to=Model)
         assert isinstance(response, Model)
         assert response.foo == 2
 
@@ -562,6 +727,8 @@ class TestWikibaseRestStainless:
         client.base_url = "https://example.com/from_setter"  # type: ignore[assignment]
 
         assert client.base_url == "https://example.com/from_setter/"
+
+        client.close()
 
     def test_base_url_env(self) -> None:
         with update_env(WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
@@ -577,6 +744,8 @@ class TestWikibaseRestStainless:
                 base_url=None, access_token=access_token, _strict_response_validation=True, environment="test"
             )
             assert str(client.base_url).startswith("https://test.wikidata.org/w/rest.php/wikibase/v0")
+
+            client.close()
 
     @pytest.mark.parametrize(
         "client",
@@ -604,6 +773,7 @@ class TestWikibaseRestStainless:
             ),
         )
         assert request.url == "http://localhost:5000/custom/path/foo"
+        client.close()
 
     @pytest.mark.parametrize(
         "client",
@@ -631,6 +801,7 @@ class TestWikibaseRestStainless:
             ),
         )
         assert request.url == "http://localhost:5000/custom/path/foo"
+        client.close()
 
     @pytest.mark.parametrize(
         "client",
@@ -658,37 +829,51 @@ class TestWikibaseRestStainless:
             ),
         )
         assert request.url == "https://myapi.com/foo"
+        client.close()
 
     def test_copied_client_does_not_close_http(self) -> None:
-        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
-        assert not client.is_closed()
+        test_client = WikibaseRestStainless(
+            base_url=base_url, access_token=access_token, _strict_response_validation=True
+        )
+        assert not test_client.is_closed()
 
-        copied = client.copy()
-        assert copied is not client
+        copied = test_client.copy()
+        assert copied is not test_client
 
         del copied
 
-        assert not client.is_closed()
+        assert not test_client.is_closed()
 
     def test_client_context_manager(self) -> None:
-        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
-        with client as c2:
-            assert c2 is client
+        test_client = WikibaseRestStainless(
+            base_url=base_url, access_token=access_token, _strict_response_validation=True
+        )
+        with test_client as c2:
+            assert c2 is test_client
             assert not c2.is_closed()
-            assert not client.is_closed()
-        assert client.is_closed()
+            assert not test_client.is_closed()
+        assert test_client.is_closed()
 
     @pytest.mark.respx(base_url=base_url)
-    def test_client_response_validation_error(self, respx_mock: MockRouter) -> None:
+    def test_client_response_validation_error(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
         class Model(BaseModel):
             foo: str
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": {"invalid": True}}))
 
         with pytest.raises(APIResponseValidationError) as exc:
-            self.client.get("/foo", cast_to=Model)
+            client.get("/foo", cast_to=Model)
 
         assert isinstance(exc.value.__cause__, ValidationError)
+
+    def test_client_max_retries_validation(self) -> None:
+        with pytest.raises(TypeError, match=r"max_retries cannot be None"):
+            WikibaseRestStainless(
+                base_url=base_url,
+                access_token=access_token,
+                _strict_response_validation=True,
+                max_retries=cast(Any, None),
+            )
 
     @pytest.mark.respx(base_url=base_url)
     def test_received_text_for_expected_json(self, respx_mock: MockRouter) -> None:
@@ -704,10 +889,15 @@ class TestWikibaseRestStainless:
         with pytest.raises(APIResponseValidationError):
             strict_client.get("/foo", cast_to=Model)
 
-        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=False)
+        non_strict_client = WikibaseRestStainless(
+            base_url=base_url, access_token=access_token, _strict_response_validation=False
+        )
 
-        response = client.get("/foo", cast_to=Model)
+        response = non_strict_client.get("/foo", cast_to=Model)
         assert isinstance(response, str)  # type: ignore[unreachable]
+
+        strict_client.close()
+        non_strict_client.close()
 
     @pytest.mark.parametrize(
         "remaining_retries,retry_after,timeout",
@@ -727,12 +917,13 @@ class TestWikibaseRestStainless:
             [3, "", 0.5],
             [2, "", 0.5 * 2.0],
             [1, "", 0.5 * 4.0],
+            [-1100, "", 8],  # test large number potentially overflowing
         ],
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
-    def test_parse_retry_after_header(self, remaining_retries: int, retry_after: str, timeout: float) -> None:
-        client = WikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
-
+    def test_parse_retry_after_header(
+        self, remaining_retries: int, retry_after: str, timeout: float, client: WikibaseRestStainless
+    ) -> None:
         headers = httpx.Headers({"retry-after": retry_after})
         options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
         calculated = client._calculate_retry_timeout(remaining_retries, options, headers)
@@ -740,79 +931,204 @@ class TestWikibaseRestStainless:
 
     @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
-    def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
+    def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
         respx_mock.get("/openapi.json").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
-            self.client.get(
-                "/openapi.json", cast_to=httpx.Response, options={"headers": {RAW_RESPONSE_HEADER: "stream"}}
-            )
+            client.openapi.with_streaming_response.retrieve().__enter__()
 
-        assert _get_open_connections(self.client) == 0
+        assert _get_open_connections(client) == 0
 
     @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
-    def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
+    def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
         respx_mock.get("/openapi.json").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
-            self.client.get(
-                "/openapi.json", cast_to=httpx.Response, options={"headers": {RAW_RESPONSE_HEADER: "stream"}}
-            )
+            client.openapi.with_streaming_response.retrieve().__enter__()
+        assert _get_open_connections(client) == 0
 
-        assert _get_open_connections(self.client) == 0
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    @pytest.mark.parametrize("failure_mode", ["status", "exception"])
+    def test_retries_taken(
+        self,
+        client: WikibaseRestStainless,
+        failures_before_success: int,
+        failure_mode: Literal["status", "exception"],
+        respx_mock: MockRouter,
+    ) -> None:
+        client = client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                if failure_mode == "exception":
+                    raise RuntimeError("oops")
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = client.openapi.with_raw_response.retrieve()
+
+        assert response.retries_taken == failures_before_success
+        assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    def test_omit_retry_count_header(
+        self, client: WikibaseRestStainless, failures_before_success: int, respx_mock: MockRouter
+    ) -> None:
+        client = client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = client.openapi.with_raw_response.retrieve(extra_headers={"x-stainless-retry-count": Omit()})
+
+        assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    def test_overwrite_retry_count_header(
+        self, client: WikibaseRestStainless, failures_before_success: int, respx_mock: MockRouter
+    ) -> None:
+        client = client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = client.openapi.with_raw_response.retrieve(extra_headers={"x-stainless-retry-count": "42"})
+
+        assert response.http_request.headers.get("x-stainless-retry-count") == "42"
+
+    def test_proxy_environment_variables(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Test that the proxy environment variables are set correctly
+        monkeypatch.setenv("HTTPS_PROXY", "https://example.org")
+        # Delete in case our environment has any proxy env vars set
+        monkeypatch.delenv("HTTP_PROXY", raising=False)
+        monkeypatch.delenv("ALL_PROXY", raising=False)
+        monkeypatch.delenv("NO_PROXY", raising=False)
+        monkeypatch.delenv("http_proxy", raising=False)
+        monkeypatch.delenv("https_proxy", raising=False)
+        monkeypatch.delenv("all_proxy", raising=False)
+        monkeypatch.delenv("no_proxy", raising=False)
+
+        client = DefaultHttpxClient()
+
+        mounts = tuple(client._mounts.items())
+        assert len(mounts) == 1
+        assert mounts[0][0].pattern == "https://"
+
+    @pytest.mark.filterwarnings("ignore:.*deprecated.*:DeprecationWarning")
+    def test_default_client_creation(self) -> None:
+        # Ensure that the client can be initialized without any exceptions
+        DefaultHttpxClient(
+            verify=True,
+            cert=None,
+            trust_env=True,
+            http1=True,
+            http2=False,
+            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+        )
+
+    @pytest.mark.respx(base_url=base_url)
+    def test_follow_redirects(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
+        # Test that the default follow_redirects=True allows following redirects
+        respx_mock.post("/redirect").mock(
+            return_value=httpx.Response(302, headers={"Location": f"{base_url}/redirected"})
+        )
+        respx_mock.get("/redirected").mock(return_value=httpx.Response(200, json={"status": "ok"}))
+
+        response = client.post("/redirect", body={"key": "value"}, cast_to=httpx.Response)
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
+
+    @pytest.mark.respx(base_url=base_url)
+    def test_follow_redirects_disabled(self, respx_mock: MockRouter, client: WikibaseRestStainless) -> None:
+        # Test that follow_redirects=False prevents following redirects
+        respx_mock.post("/redirect").mock(
+            return_value=httpx.Response(302, headers={"Location": f"{base_url}/redirected"})
+        )
+
+        with pytest.raises(APIStatusError) as exc_info:
+            client.post("/redirect", body={"key": "value"}, options={"follow_redirects": False}, cast_to=httpx.Response)
+
+        assert exc_info.value.response.status_code == 302
+        assert exc_info.value.response.headers["Location"] == f"{base_url}/redirected"
 
 
 class TestAsyncWikibaseRestStainless:
-    client = AsyncWikibaseRestStainless(base_url=base_url, access_token=access_token, _strict_response_validation=True)
-
     @pytest.mark.respx(base_url=base_url)
-    @pytest.mark.asyncio
-    async def test_raw_response(self, respx_mock: MockRouter) -> None:
+    async def test_raw_response(self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless) -> None:
         respx_mock.post("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
 
-        response = await self.client.post("/foo", cast_to=httpx.Response)
+        response = await async_client.post("/foo", cast_to=httpx.Response)
         assert response.status_code == 200
         assert isinstance(response, httpx.Response)
         assert response.json() == {"foo": "bar"}
 
     @pytest.mark.respx(base_url=base_url)
-    @pytest.mark.asyncio
-    async def test_raw_response_for_binary(self, respx_mock: MockRouter) -> None:
+    async def test_raw_response_for_binary(
+        self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless
+    ) -> None:
         respx_mock.post("/foo").mock(
             return_value=httpx.Response(200, headers={"Content-Type": "application/binary"}, content='{"foo": "bar"}')
         )
 
-        response = await self.client.post("/foo", cast_to=httpx.Response)
+        response = await async_client.post("/foo", cast_to=httpx.Response)
         assert response.status_code == 200
         assert isinstance(response, httpx.Response)
         assert response.json() == {"foo": "bar"}
 
-    def test_copy(self) -> None:
-        copied = self.client.copy()
-        assert id(copied) != id(self.client)
+    def test_copy(self, async_client: AsyncWikibaseRestStainless) -> None:
+        copied = async_client.copy()
+        assert id(copied) != id(async_client)
 
-        copied = self.client.copy(access_token="another My Access Token")
+        copied = async_client.copy(access_token="another My Access Token")
         assert copied.access_token == "another My Access Token"
-        assert self.client.access_token == "My Access Token"
+        assert async_client.access_token == "My Access Token"
 
-    def test_copy_default_options(self) -> None:
+    def test_copy_default_options(self, async_client: AsyncWikibaseRestStainless) -> None:
         # options that have a default are overridden correctly
-        copied = self.client.copy(max_retries=7)
+        copied = async_client.copy(max_retries=7)
         assert copied.max_retries == 7
-        assert self.client.max_retries == 2
+        assert async_client.max_retries == 2
 
         copied2 = copied.copy(max_retries=6)
         assert copied2.max_retries == 6
         assert copied.max_retries == 7
 
         # timeout
-        assert isinstance(self.client.timeout, httpx.Timeout)
-        copied = self.client.copy(timeout=None)
+        assert isinstance(async_client.timeout, httpx.Timeout)
+        copied = async_client.copy(timeout=None)
         assert copied.timeout is None
-        assert isinstance(self.client.timeout, httpx.Timeout)
+        assert isinstance(async_client.timeout, httpx.Timeout)
 
-    def test_copy_default_headers(self) -> None:
+    async def test_copy_default_headers(self) -> None:
         client = AsyncWikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
@@ -848,8 +1164,9 @@ class TestAsyncWikibaseRestStainless:
             match="`default_headers` and `set_default_headers` arguments are mutually exclusive",
         ):
             client.copy(set_default_headers={}, default_headers={"X-Foo": "Bar"})
+        await client.close()
 
-    def test_copy_default_query(self) -> None:
+    async def test_copy_default_query(self) -> None:
         client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True, default_query={"foo": "bar"}
         )
@@ -885,13 +1202,15 @@ class TestAsyncWikibaseRestStainless:
         ):
             client.copy(set_default_query={}, default_query={"foo": "Bar"})
 
-    def test_copy_signature(self) -> None:
+        await client.close()
+
+    def test_copy_signature(self, async_client: AsyncWikibaseRestStainless) -> None:
         # ensure the same parameters that can be passed to the client are defined in the `.copy()` method
         init_signature = inspect.signature(
             # mypy doesn't like that we access the `__init__` property.
-            self.client.__init__,  # type: ignore[misc]
+            async_client.__init__,  # type: ignore[misc]
         )
-        copy_signature = inspect.signature(self.client.copy)
+        copy_signature = inspect.signature(async_client.copy)
         exclude_params = {"transport", "proxies", "_strict_response_validation"}
 
         for name in init_signature.parameters.keys():
@@ -901,12 +1220,13 @@ class TestAsyncWikibaseRestStainless:
             copy_param = copy_signature.parameters.get(name)
             assert copy_param is not None, f"copy() signature is missing the {name} param"
 
-    def test_copy_build_request(self) -> None:
+    @pytest.mark.skipif(sys.version_info >= (3, 10), reason="fails because of a memory leak that started from 3.12")
+    def test_copy_build_request(self, async_client: AsyncWikibaseRestStainless) -> None:
         options = FinalRequestOptions(method="get", url="/foo")
 
         def build_request(options: FinalRequestOptions) -> None:
-            client = self.client.copy()
-            client._build_request(options)
+            client_copy = async_client.copy()
+            client_copy._build_request(options)
 
         # ensure that the machinery is warmed up before tracing starts.
         build_request(options)
@@ -963,12 +1283,12 @@ class TestAsyncWikibaseRestStainless:
                     print(frame)
             raise AssertionError()
 
-    async def test_request_timeout(self) -> None:
-        request = self.client._build_request(FinalRequestOptions(method="get", url="/foo"))
+    async def test_request_timeout(self, async_client: AsyncWikibaseRestStainless) -> None:
+        request = async_client._build_request(FinalRequestOptions(method="get", url="/foo"))
         timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
         assert timeout == DEFAULT_TIMEOUT
 
-        request = self.client._build_request(
+        request = async_client._build_request(
             FinalRequestOptions(method="get", url="/foo", timeout=httpx.Timeout(100.0))
         )
         timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
@@ -983,6 +1303,8 @@ class TestAsyncWikibaseRestStainless:
         timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
         assert timeout == httpx.Timeout(0)
 
+        await client.close()
+
     async def test_http_client_timeout_option(self) -> None:
         # custom timeout given to the httpx client should be used
         async with httpx.AsyncClient(timeout=None) as http_client:
@@ -994,6 +1316,8 @@ class TestAsyncWikibaseRestStainless:
             timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
             assert timeout == httpx.Timeout(None)
 
+            await client.close()
+
         # no timeout given to the httpx client should not use the httpx default
         async with httpx.AsyncClient() as http_client:
             client = AsyncWikibaseRestStainless(
@@ -1003,6 +1327,8 @@ class TestAsyncWikibaseRestStainless:
             request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
             timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
             assert timeout == DEFAULT_TIMEOUT
+
+            await client.close()
 
         # explicitly passing the default timeout currently results in it being ignored
         async with httpx.AsyncClient(timeout=HTTPX_DEFAULT_TIMEOUT) as http_client:
@@ -1014,6 +1340,8 @@ class TestAsyncWikibaseRestStainless:
             timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
             assert timeout == DEFAULT_TIMEOUT  # our default
 
+            await client.close()
+
     def test_invalid_http_client(self) -> None:
         with pytest.raises(TypeError, match="Invalid `http_client` arg"):
             with httpx.Client() as http_client:
@@ -1024,18 +1352,18 @@ class TestAsyncWikibaseRestStainless:
                     http_client=cast(Any, http_client),
                 )
 
-    def test_default_headers_option(self) -> None:
-        client = AsyncWikibaseRestStainless(
+    async def test_default_headers_option(self) -> None:
+        test_client = AsyncWikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
             default_headers={"X-Foo": "bar"},
         )
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
+        request = test_client._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "bar"
         assert request.headers.get("x-stainless-lang") == "python"
 
-        client2 = AsyncWikibaseRestStainless(
+        test_client2 = AsyncWikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
             _strict_response_validation=True,
@@ -1044,9 +1372,12 @@ class TestAsyncWikibaseRestStainless:
                 "X-Stainless-Lang": "my-overriding-header",
             },
         )
-        request = client2._build_request(FinalRequestOptions(method="get", url="/foo"))
+        request = test_client2._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "stainless"
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
+
+        await test_client.close()
+        await test_client2.close()
 
     def test_validate_headers(self) -> None:
         client = AsyncWikibaseRestStainless(
@@ -1056,10 +1387,13 @@ class TestAsyncWikibaseRestStainless:
         assert request.headers.get("Authorization") == f"Bearer {access_token}"
 
         with pytest.raises(WikibaseRestStainlessError):
-            client2 = AsyncWikibaseRestStainless(base_url=base_url, access_token=None, _strict_response_validation=True)
+            with update_env(**{"WIKIBASE_BEARER_TOKEN": Omit()}):
+                client2 = AsyncWikibaseRestStainless(
+                    base_url=base_url, access_token=None, _strict_response_validation=True
+                )
             _ = client2
 
-    def test_default_query_option(self) -> None:
+    async def test_default_query_option(self) -> None:
         client = AsyncWikibaseRestStainless(
             base_url=base_url,
             access_token=access_token,
@@ -1074,14 +1408,40 @@ class TestAsyncWikibaseRestStainless:
             FinalRequestOptions(
                 method="get",
                 url="/foo",
-                params={"foo": "baz", "query_param": "overriden"},
+                params={"foo": "baz", "query_param": "overridden"},
             )
         )
         url = httpx.URL(request.url)
-        assert dict(url.params) == {"foo": "baz", "query_param": "overriden"}
+        assert dict(url.params) == {"foo": "baz", "query_param": "overridden"}
 
-    def test_request_extra_json(self) -> None:
-        request = self.client._build_request(
+        await client.close()
+
+    async def test_hardcoded_query_params_in_url(self, async_client: AsyncWikibaseRestStainless) -> None:
+        request = async_client._build_request(FinalRequestOptions(method="get", url="/foo?beta=true"))
+        url = httpx.URL(request.url)
+        assert dict(url.params) == {"beta": "true"}
+
+        request = async_client._build_request(
+            FinalRequestOptions(
+                method="get",
+                url="/foo?beta=true",
+                params={"limit": "10", "page": "abc"},
+            )
+        )
+        url = httpx.URL(request.url)
+        assert dict(url.params) == {"beta": "true", "limit": "10", "page": "abc"}
+
+        request = async_client._build_request(
+            FinalRequestOptions(
+                method="get",
+                url="/files/a%2Fb?beta=true",
+                params={"limit": "10"},
+            )
+        )
+        assert request.url.raw_path == b"/files/a%2Fb?beta=true&limit=10"
+
+    def test_request_extra_json(self, client: WikibaseRestStainless) -> None:
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -1092,7 +1452,7 @@ class TestAsyncWikibaseRestStainless:
         data = json.loads(request.content.decode("utf-8"))
         assert data == {"foo": "bar", "baz": False}
 
-        request = self.client._build_request(
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -1103,7 +1463,7 @@ class TestAsyncWikibaseRestStainless:
         assert data == {"baz": False}
 
         # `extra_json` takes priority over `json_data` when keys clash
-        request = self.client._build_request(
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -1114,8 +1474,8 @@ class TestAsyncWikibaseRestStainless:
         data = json.loads(request.content.decode("utf-8"))
         assert data == {"foo": "bar", "baz": None}
 
-    def test_request_extra_headers(self) -> None:
-        request = self.client._build_request(
+    def test_request_extra_headers(self, client: WikibaseRestStainless) -> None:
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -1125,7 +1485,7 @@ class TestAsyncWikibaseRestStainless:
         assert request.headers.get("X-Foo") == "Foo"
 
         # `extra_headers` takes priority over `default_headers` when keys clash
-        request = self.client.with_options(default_headers={"X-Bar": "true"})._build_request(
+        request = client.with_options(default_headers={"X-Bar": "true"})._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -1136,8 +1496,8 @@ class TestAsyncWikibaseRestStainless:
         )
         assert request.headers.get("X-Bar") == "false"
 
-    def test_request_extra_query(self) -> None:
-        request = self.client._build_request(
+    def test_request_extra_query(self, client: WikibaseRestStainless) -> None:
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -1150,7 +1510,7 @@ class TestAsyncWikibaseRestStainless:
         assert params == {"my_query_param": "Foo"}
 
         # if both `query` and `extra_query` are given, they are merged
-        request = self.client._build_request(
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -1164,7 +1524,7 @@ class TestAsyncWikibaseRestStainless:
         assert params == {"bar": "1", "foo": "2"}
 
         # `extra_query` takes priority over `query` when keys clash
-        request = self.client._build_request(
+        request = client._build_request(
             FinalRequestOptions(
                 method="post",
                 url="/foo",
@@ -1180,7 +1540,7 @@ class TestAsyncWikibaseRestStainless:
     def test_multipart_repeating_array(self, async_client: AsyncWikibaseRestStainless) -> None:
         request = async_client._build_request(
             FinalRequestOptions.construct(
-                method="get",
+                method="post",
                 url="/foo",
                 headers={"Content-Type": "multipart/form-data; boundary=6b7ba517decee4a450543ea6ae821c82"},
                 json_data={"array": ["foo", "bar"]},
@@ -1207,7 +1567,75 @@ class TestAsyncWikibaseRestStainless:
         ]
 
     @pytest.mark.respx(base_url=base_url)
-    async def test_basic_union_response(self, respx_mock: MockRouter) -> None:
+    async def test_binary_content_upload(
+        self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless
+    ) -> None:
+        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
+
+        file_content = b"Hello, this is a test file."
+
+        response = await async_client.post(
+            "/upload",
+            content=file_content,
+            cast_to=httpx.Response,
+            options={"headers": {"Content-Type": "application/octet-stream"}},
+        )
+
+        assert response.status_code == 200
+        assert response.request.headers["Content-Type"] == "application/octet-stream"
+        assert response.content == file_content
+
+    async def test_binary_content_upload_with_asynciterator(self) -> None:
+        file_content = b"Hello, this is a test file."
+        counter = Counter()
+        iterator = _make_async_iterator([file_content], counter=counter)
+
+        async def mock_handler(request: httpx.Request) -> httpx.Response:
+            assert counter.value == 0, "the request body should not have been read"
+            return httpx.Response(200, content=await request.aread())
+
+        async with AsyncWikibaseRestStainless(
+            base_url=base_url,
+            access_token=access_token,
+            _strict_response_validation=True,
+            http_client=httpx.AsyncClient(transport=MockTransport(handler=mock_handler)),
+        ) as client:
+            response = await client.post(
+                "/upload",
+                content=iterator,
+                cast_to=httpx.Response,
+                options={"headers": {"Content-Type": "application/octet-stream"}},
+            )
+
+            assert response.status_code == 200
+            assert response.request.headers["Content-Type"] == "application/octet-stream"
+            assert response.content == file_content
+            assert counter.value == 1
+
+    @pytest.mark.respx(base_url=base_url)
+    async def test_binary_content_upload_with_body_is_deprecated(
+        self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless
+    ) -> None:
+        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
+
+        file_content = b"Hello, this is a test file."
+
+        with pytest.deprecated_call(
+            match="Passing raw bytes as `body` is deprecated and will be removed in a future version. Please pass raw bytes via the `content` parameter instead."
+        ):
+            response = await async_client.post(
+                "/upload",
+                body=file_content,
+                cast_to=httpx.Response,
+                options={"headers": {"Content-Type": "application/octet-stream"}},
+            )
+
+        assert response.status_code == 200
+        assert response.request.headers["Content-Type"] == "application/octet-stream"
+        assert response.content == file_content
+
+    @pytest.mark.respx(base_url=base_url)
+    async def test_basic_union_response(self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless) -> None:
         class Model1(BaseModel):
             name: str
 
@@ -1216,12 +1644,14 @@ class TestAsyncWikibaseRestStainless:
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
 
-        response = await self.client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
+        response = await async_client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
         assert isinstance(response, Model2)
         assert response.foo == "bar"
 
     @pytest.mark.respx(base_url=base_url)
-    async def test_union_response_different_types(self, respx_mock: MockRouter) -> None:
+    async def test_union_response_different_types(
+        self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless
+    ) -> None:
         """Union of objects with the same field name using a different type"""
 
         class Model1(BaseModel):
@@ -1232,18 +1662,20 @@ class TestAsyncWikibaseRestStainless:
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
 
-        response = await self.client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
+        response = await async_client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
         assert isinstance(response, Model2)
         assert response.foo == "bar"
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": 1}))
 
-        response = await self.client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
+        response = await async_client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
         assert isinstance(response, Model1)
         assert response.foo == 1
 
     @pytest.mark.respx(base_url=base_url)
-    async def test_non_application_json_content_type_for_json_data(self, respx_mock: MockRouter) -> None:
+    async def test_non_application_json_content_type_for_json_data(
+        self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless
+    ) -> None:
         """
         Response that sets Content-Type to something other than application/json but returns json data
         """
@@ -1259,11 +1691,11 @@ class TestAsyncWikibaseRestStainless:
             )
         )
 
-        response = await self.client.get("/foo", cast_to=Model)
+        response = await async_client.get("/foo", cast_to=Model)
         assert isinstance(response, Model)
         assert response.foo == 2
 
-    def test_base_url_setter(self) -> None:
+    async def test_base_url_setter(self) -> None:
         client = AsyncWikibaseRestStainless(
             base_url="https://example.com/from_init", access_token=access_token, _strict_response_validation=True
         )
@@ -1273,7 +1705,9 @@ class TestAsyncWikibaseRestStainless:
 
         assert client.base_url == "https://example.com/from_setter/"
 
-    def test_base_url_env(self) -> None:
+        await client.close()
+
+    async def test_base_url_env(self) -> None:
         with update_env(WIKIBASE_REST_STAINLESS_BASE_URL="http://localhost:5000/from/env"):
             client = AsyncWikibaseRestStainless(access_token=access_token, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
@@ -1290,32 +1724,7 @@ class TestAsyncWikibaseRestStainless:
             )
             assert str(client.base_url).startswith("https://test.wikidata.org/w/rest.php/wikibase/v0")
 
-    @pytest.mark.parametrize(
-        "client",
-        [
-            AsyncWikibaseRestStainless(
-                base_url="http://localhost:5000/custom/path/",
-                access_token=access_token,
-                _strict_response_validation=True,
-            ),
-            AsyncWikibaseRestStainless(
-                base_url="http://localhost:5000/custom/path/",
-                access_token=access_token,
-                _strict_response_validation=True,
-                http_client=httpx.AsyncClient(),
-            ),
-        ],
-        ids=["standard", "custom http client"],
-    )
-    def test_base_url_trailing_slash(self, client: AsyncWikibaseRestStainless) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                json_data={"foo": "bar"},
-            ),
-        )
-        assert request.url == "http://localhost:5000/custom/path/foo"
+            await client.close()
 
     @pytest.mark.parametrize(
         "client",
@@ -1334,7 +1743,7 @@ class TestAsyncWikibaseRestStainless:
         ],
         ids=["standard", "custom http client"],
     )
-    def test_base_url_no_trailing_slash(self, client: AsyncWikibaseRestStainless) -> None:
+    async def test_base_url_trailing_slash(self, client: AsyncWikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions(
                 method="post",
@@ -1343,6 +1752,7 @@ class TestAsyncWikibaseRestStainless:
             ),
         )
         assert request.url == "http://localhost:5000/custom/path/foo"
+        await client.close()
 
     @pytest.mark.parametrize(
         "client",
@@ -1361,7 +1771,35 @@ class TestAsyncWikibaseRestStainless:
         ],
         ids=["standard", "custom http client"],
     )
-    def test_absolute_request_url(self, client: AsyncWikibaseRestStainless) -> None:
+    async def test_base_url_no_trailing_slash(self, client: AsyncWikibaseRestStainless) -> None:
+        request = client._build_request(
+            FinalRequestOptions(
+                method="post",
+                url="/foo",
+                json_data={"foo": "bar"},
+            ),
+        )
+        assert request.url == "http://localhost:5000/custom/path/foo"
+        await client.close()
+
+    @pytest.mark.parametrize(
+        "client",
+        [
+            AsyncWikibaseRestStainless(
+                base_url="http://localhost:5000/custom/path/",
+                access_token=access_token,
+                _strict_response_validation=True,
+            ),
+            AsyncWikibaseRestStainless(
+                base_url="http://localhost:5000/custom/path/",
+                access_token=access_token,
+                _strict_response_validation=True,
+                http_client=httpx.AsyncClient(),
+            ),
+        ],
+        ids=["standard", "custom http client"],
+    )
+    async def test_absolute_request_url(self, client: AsyncWikibaseRestStainless) -> None:
         request = client._build_request(
             FinalRequestOptions(
                 method="post",
@@ -1370,46 +1808,56 @@ class TestAsyncWikibaseRestStainless:
             ),
         )
         assert request.url == "https://myapi.com/foo"
+        await client.close()
 
     async def test_copied_client_does_not_close_http(self) -> None:
-        client = AsyncWikibaseRestStainless(
+        test_client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True
         )
-        assert not client.is_closed()
+        assert not test_client.is_closed()
 
-        copied = client.copy()
-        assert copied is not client
+        copied = test_client.copy()
+        assert copied is not test_client
 
         del copied
 
         await asyncio.sleep(0.2)
-        assert not client.is_closed()
+        assert not test_client.is_closed()
 
     async def test_client_context_manager(self) -> None:
-        client = AsyncWikibaseRestStainless(
+        test_client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=True
         )
-        async with client as c2:
-            assert c2 is client
+        async with test_client as c2:
+            assert c2 is test_client
             assert not c2.is_closed()
-            assert not client.is_closed()
-        assert client.is_closed()
+            assert not test_client.is_closed()
+        assert test_client.is_closed()
 
     @pytest.mark.respx(base_url=base_url)
-    @pytest.mark.asyncio
-    async def test_client_response_validation_error(self, respx_mock: MockRouter) -> None:
+    async def test_client_response_validation_error(
+        self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless
+    ) -> None:
         class Model(BaseModel):
             foo: str
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": {"invalid": True}}))
 
         with pytest.raises(APIResponseValidationError) as exc:
-            await self.client.get("/foo", cast_to=Model)
+            await async_client.get("/foo", cast_to=Model)
 
         assert isinstance(exc.value.__cause__, ValidationError)
 
+    async def test_client_max_retries_validation(self) -> None:
+        with pytest.raises(TypeError, match=r"max_retries cannot be None"):
+            AsyncWikibaseRestStainless(
+                base_url=base_url,
+                access_token=access_token,
+                _strict_response_validation=True,
+                max_retries=cast(Any, None),
+            )
+
     @pytest.mark.respx(base_url=base_url)
-    @pytest.mark.asyncio
     async def test_received_text_for_expected_json(self, respx_mock: MockRouter) -> None:
         class Model(BaseModel):
             name: str
@@ -1423,12 +1871,15 @@ class TestAsyncWikibaseRestStainless:
         with pytest.raises(APIResponseValidationError):
             await strict_client.get("/foo", cast_to=Model)
 
-        client = AsyncWikibaseRestStainless(
+        non_strict_client = AsyncWikibaseRestStainless(
             base_url=base_url, access_token=access_token, _strict_response_validation=False
         )
 
-        response = await client.get("/foo", cast_to=Model)
+        response = await non_strict_client.get("/foo", cast_to=Model)
         assert isinstance(response, str)  # type: ignore[unreachable]
+
+        await strict_client.close()
+        await non_strict_client.close()
 
     @pytest.mark.parametrize(
         "remaining_retries,retry_after,timeout",
@@ -1448,40 +1899,177 @@ class TestAsyncWikibaseRestStainless:
             [3, "", 0.5],
             [2, "", 0.5 * 2.0],
             [1, "", 0.5 * 4.0],
+            [-1100, "", 8],  # test large number potentially overflowing
         ],
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
-    @pytest.mark.asyncio
-    async def test_parse_retry_after_header(self, remaining_retries: int, retry_after: str, timeout: float) -> None:
-        client = AsyncWikibaseRestStainless(
-            base_url=base_url, access_token=access_token, _strict_response_validation=True
-        )
-
+    async def test_parse_retry_after_header(
+        self, remaining_retries: int, retry_after: str, timeout: float, async_client: AsyncWikibaseRestStainless
+    ) -> None:
         headers = httpx.Headers({"retry-after": retry_after})
         options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
-        calculated = client._calculate_retry_timeout(remaining_retries, options, headers)
+        calculated = async_client._calculate_retry_timeout(remaining_retries, options, headers)
         assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
 
     @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
-    async def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
+    async def test_retrying_timeout_errors_doesnt_leak(
+        self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless
+    ) -> None:
         respx_mock.get("/openapi.json").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
-            await self.client.get(
-                "/openapi.json", cast_to=httpx.Response, options={"headers": {RAW_RESPONSE_HEADER: "stream"}}
-            )
+            await async_client.openapi.with_streaming_response.retrieve().__aenter__()
 
-        assert _get_open_connections(self.client) == 0
+        assert _get_open_connections(async_client) == 0
 
     @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
-    async def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
+    async def test_retrying_status_errors_doesnt_leak(
+        self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless
+    ) -> None:
         respx_mock.get("/openapi.json").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
-            await self.client.get(
-                "/openapi.json", cast_to=httpx.Response, options={"headers": {RAW_RESPONSE_HEADER: "stream"}}
+            await async_client.openapi.with_streaming_response.retrieve().__aenter__()
+        assert _get_open_connections(async_client) == 0
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    @pytest.mark.parametrize("failure_mode", ["status", "exception"])
+    async def test_retries_taken(
+        self,
+        async_client: AsyncWikibaseRestStainless,
+        failures_before_success: int,
+        failure_mode: Literal["status", "exception"],
+        respx_mock: MockRouter,
+    ) -> None:
+        client = async_client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                if failure_mode == "exception":
+                    raise RuntimeError("oops")
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = await client.openapi.with_raw_response.retrieve()
+
+        assert response.retries_taken == failures_before_success
+        assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    async def test_omit_retry_count_header(
+        self, async_client: AsyncWikibaseRestStainless, failures_before_success: int, respx_mock: MockRouter
+    ) -> None:
+        client = async_client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = await client.openapi.with_raw_response.retrieve(extra_headers={"x-stainless-retry-count": Omit()})
+
+        assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
+
+    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
+    @mock.patch("wikibase_rest_stainless._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @pytest.mark.respx(base_url=base_url)
+    async def test_overwrite_retry_count_header(
+        self, async_client: AsyncWikibaseRestStainless, failures_before_success: int, respx_mock: MockRouter
+    ) -> None:
+        client = async_client.with_options(max_retries=4)
+
+        nb_retries = 0
+
+        def retry_handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal nb_retries
+            if nb_retries < failures_before_success:
+                nb_retries += 1
+                return httpx.Response(500)
+            return httpx.Response(200)
+
+        respx_mock.get("/openapi.json").mock(side_effect=retry_handler)
+
+        response = await client.openapi.with_raw_response.retrieve(extra_headers={"x-stainless-retry-count": "42"})
+
+        assert response.http_request.headers.get("x-stainless-retry-count") == "42"
+
+    async def test_get_platform(self) -> None:
+        platform = await asyncify(get_platform)()
+        assert isinstance(platform, (str, OtherPlatform))
+
+    async def test_proxy_environment_variables(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Test that the proxy environment variables are set correctly
+        monkeypatch.setenv("HTTPS_PROXY", "https://example.org")
+        # Delete in case our environment has any proxy env vars set
+        monkeypatch.delenv("HTTP_PROXY", raising=False)
+        monkeypatch.delenv("ALL_PROXY", raising=False)
+        monkeypatch.delenv("NO_PROXY", raising=False)
+        monkeypatch.delenv("http_proxy", raising=False)
+        monkeypatch.delenv("https_proxy", raising=False)
+        monkeypatch.delenv("all_proxy", raising=False)
+        monkeypatch.delenv("no_proxy", raising=False)
+
+        client = DefaultAsyncHttpxClient()
+
+        mounts = tuple(client._mounts.items())
+        assert len(mounts) == 1
+        assert mounts[0][0].pattern == "https://"
+
+    @pytest.mark.filterwarnings("ignore:.*deprecated.*:DeprecationWarning")
+    async def test_default_client_creation(self) -> None:
+        # Ensure that the client can be initialized without any exceptions
+        DefaultAsyncHttpxClient(
+            verify=True,
+            cert=None,
+            trust_env=True,
+            http1=True,
+            http2=False,
+            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+        )
+
+    @pytest.mark.respx(base_url=base_url)
+    async def test_follow_redirects(self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless) -> None:
+        # Test that the default follow_redirects=True allows following redirects
+        respx_mock.post("/redirect").mock(
+            return_value=httpx.Response(302, headers={"Location": f"{base_url}/redirected"})
+        )
+        respx_mock.get("/redirected").mock(return_value=httpx.Response(200, json={"status": "ok"}))
+
+        response = await async_client.post("/redirect", body={"key": "value"}, cast_to=httpx.Response)
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
+
+    @pytest.mark.respx(base_url=base_url)
+    async def test_follow_redirects_disabled(
+        self, respx_mock: MockRouter, async_client: AsyncWikibaseRestStainless
+    ) -> None:
+        # Test that follow_redirects=False prevents following redirects
+        respx_mock.post("/redirect").mock(
+            return_value=httpx.Response(302, headers={"Location": f"{base_url}/redirected"})
+        )
+
+        with pytest.raises(APIStatusError) as exc_info:
+            await async_client.post(
+                "/redirect", body={"key": "value"}, options={"follow_redirects": False}, cast_to=httpx.Response
             )
 
-        assert _get_open_connections(self.client) == 0
+        assert exc_info.value.response.status_code == 302
+        assert exc_info.value.response.headers["Location"] == f"{base_url}/redirected"

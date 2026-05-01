@@ -2,15 +2,10 @@
 
 from __future__ import annotations
 
-from typing import List
-
 import httpx
 
-from ...._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from ...._utils import (
-    maybe_transform,
-    async_maybe_transform,
-)
+from ...._types import Body, Omit, Query, Headers, NotGiven, SequenceNotStr, omit, not_given
+from ...._utils import is_given, path_template, maybe_transform, strip_not_given, async_maybe_transform
 from ...._compat import cached_property
 from ...._resource import SyncAPIResource, AsyncAPIResource
 from ...._response import (
@@ -19,38 +14,50 @@ from ...._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from ...._base_client import (
-    make_request_options,
-)
-from ....types.entities.properties import (
-    LabelListResponse,
-    label_delete_params,
-    label_update_params,
-)
+from ...._base_client import make_request_options
+from ....types.entities.properties import label_delete_params, label_update_params
+from ....types.entities.properties.label_list_response import LabelListResponse
 
-__all__ = ["Labels", "AsyncLabels"]
+__all__ = ["LabelsResource", "AsyncLabelsResource"]
 
 
-class Labels(SyncAPIResource):
-    @cached_property
-    def with_raw_response(self) -> LabelsWithRawResponse:
-        return LabelsWithRawResponse(self)
+class LabelsResource(SyncAPIResource):
+    """Wikibase Labels"""
 
     @cached_property
-    def with_streaming_response(self) -> LabelsWithStreamingResponse:
-        return LabelsWithStreamingResponse(self)
+    def with_raw_response(self) -> LabelsResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return LabelsResourceWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> LabelsResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return LabelsResourceWithStreamingResponse(self)
 
     def retrieve(
         self,
         language_code: str,
         *,
         property_id: str,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Retrieve a Property's label in a specific language
@@ -68,8 +75,23 @@ class Labels(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
-            f"/entities/properties/{property_id}/labels/{language_code}",
+            path_template(
+                "/entities/properties/{property_id}/labels/{language_code}",
+                property_id=property_id,
+                language_code=language_code,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -82,15 +104,19 @@ class Labels(SyncAPIResource):
         *,
         property_id: str,
         label: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Add / Replace a Property's label in a specific language
@@ -108,8 +134,23 @@ class Labels(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._put(
-            f"/entities/properties/{property_id}/labels/{language_code}",
+            path_template(
+                "/entities/properties/{property_id}/labels/{language_code}",
+                property_id=property_id,
+                language_code=language_code,
+            ),
             body=maybe_transform(
                 {
                     "label": label,
@@ -129,12 +170,16 @@ class Labels(SyncAPIResource):
         self,
         property_id: str,
         *,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> LabelListResponse:
         """
         Retrieve a Property's labels
@@ -150,8 +195,19 @@ class Labels(SyncAPIResource):
         """
         if not property_id:
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
-            f"/entities/properties/{property_id}/labels",
+            path_template("/entities/properties/{property_id}/labels", property_id=property_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -163,15 +219,19 @@ class Labels(SyncAPIResource):
         language_code: str,
         *,
         property_id: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Delete a Property's label in a specific language
@@ -189,8 +249,23 @@ class Labels(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._delete(
-            f"/entities/properties/{property_id}/labels/{language_code}",
+            path_template(
+                "/entities/properties/{property_id}/labels/{language_code}",
+                property_id=property_id,
+                language_code=language_code,
+            ),
             body=maybe_transform(
                 {
                     "bot": bot,
@@ -206,26 +281,43 @@ class Labels(SyncAPIResource):
         )
 
 
-class AsyncLabels(AsyncAPIResource):
-    @cached_property
-    def with_raw_response(self) -> AsyncLabelsWithRawResponse:
-        return AsyncLabelsWithRawResponse(self)
+class AsyncLabelsResource(AsyncAPIResource):
+    """Wikibase Labels"""
 
     @cached_property
-    def with_streaming_response(self) -> AsyncLabelsWithStreamingResponse:
-        return AsyncLabelsWithStreamingResponse(self)
+    def with_raw_response(self) -> AsyncLabelsResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncLabelsResourceWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> AsyncLabelsResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return AsyncLabelsResourceWithStreamingResponse(self)
 
     async def retrieve(
         self,
         language_code: str,
         *,
         property_id: str,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Retrieve a Property's label in a specific language
@@ -243,8 +335,23 @@ class AsyncLabels(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
-            f"/entities/properties/{property_id}/labels/{language_code}",
+            path_template(
+                "/entities/properties/{property_id}/labels/{language_code}",
+                property_id=property_id,
+                language_code=language_code,
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -257,15 +364,19 @@ class AsyncLabels(AsyncAPIResource):
         *,
         property_id: str,
         label: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Add / Replace a Property's label in a specific language
@@ -283,8 +394,23 @@ class AsyncLabels(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._put(
-            f"/entities/properties/{property_id}/labels/{language_code}",
+            path_template(
+                "/entities/properties/{property_id}/labels/{language_code}",
+                property_id=property_id,
+                language_code=language_code,
+            ),
             body=await async_maybe_transform(
                 {
                     "label": label,
@@ -304,12 +430,16 @@ class AsyncLabels(AsyncAPIResource):
         self,
         property_id: str,
         *,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> LabelListResponse:
         """
         Retrieve a Property's labels
@@ -325,8 +455,19 @@ class AsyncLabels(AsyncAPIResource):
         """
         if not property_id:
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
-            f"/entities/properties/{property_id}/labels",
+            path_template("/entities/properties/{property_id}/labels", property_id=property_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -338,15 +479,19 @@ class AsyncLabels(AsyncAPIResource):
         language_code: str,
         *,
         property_id: str,
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> str:
         """
         Delete a Property's label in a specific language
@@ -364,8 +509,23 @@ class AsyncLabels(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `property_id` but received {property_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._delete(
-            f"/entities/properties/{property_id}/labels/{language_code}",
+            path_template(
+                "/entities/properties/{property_id}/labels/{language_code}",
+                property_id=property_id,
+                language_code=language_code,
+            ),
             body=await async_maybe_transform(
                 {
                     "bot": bot,
@@ -381,8 +541,8 @@ class AsyncLabels(AsyncAPIResource):
         )
 
 
-class LabelsWithRawResponse:
-    def __init__(self, labels: Labels) -> None:
+class LabelsResourceWithRawResponse:
+    def __init__(self, labels: LabelsResource) -> None:
         self._labels = labels
 
         self.retrieve = to_raw_response_wrapper(
@@ -399,8 +559,8 @@ class LabelsWithRawResponse:
         )
 
 
-class AsyncLabelsWithRawResponse:
-    def __init__(self, labels: AsyncLabels) -> None:
+class AsyncLabelsResourceWithRawResponse:
+    def __init__(self, labels: AsyncLabelsResource) -> None:
         self._labels = labels
 
         self.retrieve = async_to_raw_response_wrapper(
@@ -417,8 +577,8 @@ class AsyncLabelsWithRawResponse:
         )
 
 
-class LabelsWithStreamingResponse:
-    def __init__(self, labels: Labels) -> None:
+class LabelsResourceWithStreamingResponse:
+    def __init__(self, labels: LabelsResource) -> None:
         self._labels = labels
 
         self.retrieve = to_streamed_response_wrapper(
@@ -435,8 +595,8 @@ class LabelsWithStreamingResponse:
         )
 
 
-class AsyncLabelsWithStreamingResponse:
-    def __init__(self, labels: AsyncLabels) -> None:
+class AsyncLabelsResourceWithStreamingResponse:
+    def __init__(self, labels: AsyncLabelsResource) -> None:
         self._labels = labels
 
         self.retrieve = async_to_streamed_response_wrapper(

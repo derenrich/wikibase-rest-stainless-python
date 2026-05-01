@@ -13,7 +13,7 @@ from wikibase_rest_stainless import WikibaseRestStainless, AsyncWikibaseRestStai
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
 
-class TestOpenapi:
+class TestOpenAPI:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
     @parametrize
@@ -42,8 +42,10 @@ class TestOpenapi:
         assert cast(Any, response.is_closed) is True
 
 
-class TestAsyncOpenapi:
-    parametrize = pytest.mark.parametrize("async_client", [False, True], indirect=True, ids=["loose", "strict"])
+class TestAsyncOpenAPI:
+    parametrize = pytest.mark.parametrize(
+        "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
+    )
 
     @parametrize
     async def test_method_retrieve(self, async_client: AsyncWikibaseRestStainless) -> None:

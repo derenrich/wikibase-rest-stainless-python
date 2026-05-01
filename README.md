@@ -1,22 +1,23 @@
 # Wikibase Rest Stainless Python API library
 
-[![PyPI version](https://img.shields.io/pypi/v/wikibase-rest-stainless.svg)](https://pypi.org/project/wikibase-rest-stainless/)
+<!-- prettier-ignore -->
+[![PyPI version](https://img.shields.io/pypi/v/wikibase-rest-stainless.svg?label=pypi%20(stable))](https://pypi.org/project/wikibase-rest-stainless/)
 
-The Wikibase Rest Stainless Python library provides convenient access to the Wikibase Rest Stainless REST API from any Python 3.7+
+The Wikibase Rest Stainless Python library provides convenient access to the Wikibase Rest Stainless REST API from any Python 3.9+
 application. The library includes type definitions for all request params and response fields,
 and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
 
-It is generated with [Stainless](https://www.stainlessapi.com/).
+It is generated with [Stainless](https://www.stainless.com/).
 
 ## Documentation
 
-The REST API documentation can be found [on phabricator.wikimedia.org](https://phabricator.wikimedia.org/project/board/6692/). The full API of this library can be found in [api.md](api.md).
+The REST API documentation can be found on [phabricator.wikimedia.org](https://phabricator.wikimedia.org/project/board/6692/). The full API of this library can be found in [api.md](api.md).
 
 ## Installation
 
 ```sh
 # install from PyPI
-pip install --pre wikibase-rest-stainless
+pip install '--pre wikibase-rest-stainless'
 ```
 
 ## Usage
@@ -28,13 +29,12 @@ import os
 from wikibase_rest_stainless import WikibaseRestStainless
 
 client = WikibaseRestStainless(
-    # This is the default and can be omitted
-    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),
+    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),  # This is the default and can be omitted
     # defaults to "test".
     environment="production",
 )
 
-openapi_retrieve_response = client.openapi.retrieve()
+openapi = client.openapi.retrieve()
 ```
 
 While you can provide a `access_token` keyword argument,
@@ -52,15 +52,14 @@ import asyncio
 from wikibase_rest_stainless import AsyncWikibaseRestStainless
 
 client = AsyncWikibaseRestStainless(
-    # This is the default and can be omitted
-    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),
+    access_token=os.environ.get("WIKIBASE_BEARER_TOKEN"),  # This is the default and can be omitted
     # defaults to "test".
     environment="production",
 )
 
 
 async def main() -> None:
-    openapi_retrieve_response = await client.openapi.retrieve()
+    openapi = await client.openapi.retrieve()
 
 
 asyncio.run(main())
@@ -68,14 +67,62 @@ asyncio.run(main())
 
 Functionality between the synchronous and asynchronous clients is otherwise identical.
 
+### With aiohttp
+
+By default, the async client uses `httpx` for HTTP requests. However, for improved concurrency performance you may also use `aiohttp` as the HTTP backend.
+
+You can enable this by installing `aiohttp`:
+
+```sh
+# install from PyPI
+pip install '--pre wikibase-rest-stainless[aiohttp]'
+```
+
+Then you can enable it by instantiating the client with `http_client=DefaultAioHttpClient()`:
+
+```python
+import os
+import asyncio
+from wikibase_rest_stainless import DefaultAioHttpClient
+from wikibase_rest_stainless import AsyncWikibaseRestStainless
+
+
+async def main() -> None:
+    async with AsyncWikibaseRestStainless(
+        access_token=os.environ.get(
+            "WIKIBASE_BEARER_TOKEN"
+        ),  # This is the default and can be omitted
+        http_client=DefaultAioHttpClient(),
+    ) as client:
+        openapi = await client.openapi.retrieve()
+
+
+asyncio.run(main())
+```
+
 ## Using types
 
-Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typing.html#typing.TypedDict). Responses are [Pydantic models](https://docs.pydantic.dev), which provide helper methods for things like:
+Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typing.html#typing.TypedDict). Responses are [Pydantic models](https://docs.pydantic.dev) which also provide helper methods for things like:
 
-- Serializing back into JSON, `model.model_dump_json(indent=2, exclude_unset=True)`
-- Converting to a dictionary, `model.model_dump(exclude_unset=True)`
+- Serializing back into JSON, `model.to_json()`
+- Converting to a dictionary, `model.to_dict()`
 
 Typed requests and responses provide autocomplete and documentation within your editor. If you would like to see type errors in VS Code to help catch bugs earlier, set `python.analysis.typeCheckingMode` to `basic`.
+
+## Nested params
+
+Nested parameters are dictionaries, typed using `TypedDict`, for example:
+
+```python
+from wikibase_rest_stainless import WikibaseRestStainless
+
+client = WikibaseRestStainless()
+
+item = client.entities.items.create(
+    item={},
+)
+print(item.item)
+```
 
 ## Handling errors
 
@@ -105,7 +152,7 @@ except wikibase_rest_stainless.APIStatusError as e:
     print(e.response)
 ```
 
-Error codes are as followed:
+Error codes are as follows:
 
 | Status Code | Error Type                 |
 | ----------- | -------------------------- |
@@ -142,7 +189,7 @@ client.with_options(max_retries=5).openapi.retrieve()
 ### Timeouts
 
 By default requests time out after 1 minute. You can configure this with a `timeout` option,
-which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advanced/#fine-tuning-the-configuration) object:
+which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advanced/timeouts/#fine-tuning-the-configuration) object:
 
 ```python
 from wikibase_rest_stainless import WikibaseRestStainless
@@ -159,7 +206,7 @@ client = WikibaseRestStainless(
 )
 
 # Override per-request:
-client.with_options(timeout=5 * 1000).openapi.retrieve()
+client.with_options(timeout=5.0).openapi.retrieve()
 ```
 
 On timeout, an `APITimeoutError` is thrown.
@@ -172,11 +219,13 @@ Note that requests that time out are [retried twice by default](#retries).
 
 We use the standard library [`logging`](https://docs.python.org/3/library/logging.html) module.
 
-You can enable logging by setting the environment variable `WIKIBASE_REST_STAINLESS_LOG` to `debug`.
+You can enable logging by setting the environment variable `WIKIBASE_REST_STAINLESS_LOG` to `info`.
 
 ```shell
-$ export WIKIBASE_REST_STAINLESS_LOG=debug
+$ export WIKIBASE_REST_STAINLESS_LOG=info
 ```
+
+Or to `debug` for more verbose logging.
 
 ### How to tell whether `None` means `null` or missing
 
@@ -227,15 +276,14 @@ The context manager is required so that the response will reliably be closed.
 
 ### Making custom/undocumented requests
 
-This library is typed for convenient access the documented API.
+This library is typed for convenient access to the documented API.
 
 If you need to access undocumented endpoints, params, or response properties, the library can still be used.
 
 #### Undocumented endpoints
 
 To make requests to undocumented endpoints, you can make requests using `client.get`, `client.post`, and other
-http verbs. Options on the client will be respected (such as retries) will be respected when making this
-request.
+http verbs. Options on the client will be respected (such as retries) when making this request.
 
 ```py
 import httpx
@@ -249,12 +297,12 @@ response = client.post(
 print(response.headers.get("x-foo"))
 ```
 
-#### Undocumented params
+#### Undocumented request params
 
 If you want to explicitly send an extra param, you can do so with the `extra_query`, `extra_body`, and `extra_headers` request
 options.
 
-#### Undocumented properties
+#### Undocumented response properties
 
 To access undocumented response properties, you can access the extra fields like `response.unknown_prop`. You
 can also get all the extra fields on the Pydantic model as a dict with
@@ -264,40 +312,71 @@ can also get all the extra fields on the Pydantic model as a dict with
 
 You can directly override the [httpx client](https://www.python-httpx.org/api/#client) to customize it for your use case, including:
 
-- Support for proxies
-- Custom transports
-- Additional [advanced](https://www.python-httpx.org/advanced/#client-instances) functionality
+- Support for [proxies](https://www.python-httpx.org/advanced/proxies/)
+- Custom [transports](https://www.python-httpx.org/advanced/transports/)
+- Additional [advanced](https://www.python-httpx.org/advanced/clients/) functionality
 
 ```python
 import httpx
-from wikibase_rest_stainless import WikibaseRestStainless
+from wikibase_rest_stainless import WikibaseRestStainless, DefaultHttpxClient
 
 client = WikibaseRestStainless(
     # Or use the `WIKIBASE_REST_STAINLESS_BASE_URL` env var
     base_url="http://my.test.server.example.com:8083",
-    http_client=httpx.Client(
-        proxies="http://my.test.proxy.example.com",
+    http_client=DefaultHttpxClient(
+        proxy="http://my.test.proxy.example.com",
         transport=httpx.HTTPTransport(local_address="0.0.0.0"),
     ),
 )
+```
+
+You can also customize the client on a per-request basis by using `with_options()`:
+
+```python
+client.with_options(http_client=DefaultHttpxClient(...))
 ```
 
 ### Managing HTTP resources
 
 By default the library closes underlying HTTP connections whenever the client is [garbage collected](https://docs.python.org/3/reference/datamodel.html#object.__del__). You can manually close the client using the `.close()` method if desired, or with a context manager that closes when exiting.
 
+```py
+from wikibase_rest_stainless import WikibaseRestStainless
+
+with WikibaseRestStainless() as client:
+  # make requests here
+  ...
+
+# HTTP client is now closed
+```
+
 ## Versioning
 
 This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) conventions, though certain backwards-incompatible changes may be released as minor versions:
 
 1. Changes that only affect static types, without breaking runtime behavior.
-2. Changes to library internals which are technically public but not intended or documented for external use. _(Please open a GitHub issue to let us know if you are relying on such internals)_.
+2. Changes to library internals which are technically public but not intended or documented for external use. _(Please open a GitHub issue to let us know if you are relying on such internals.)_
 3. Changes that we do not expect to impact the vast majority of users in practice.
 
 We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
 
 We are keen for your feedback; please open an [issue](https://www.github.com/derenrich/wikibase-rest-stainless-python/issues) with questions, bugs, or suggestions.
 
+### Determining the installed version
+
+If you've upgraded to the latest version but aren't seeing any new features you were expecting then your python environment is likely still using an older version.
+
+You can determine the version that is being used at runtime with:
+
+```py
+import wikibase_rest_stainless
+print(wikibase_rest_stainless.__version__)
+```
+
 ## Requirements
 
-Python 3.7 or higher.
+Python 3.9 or higher.
+
+## Contributing
+
+See [the contributing documentation](./CONTRIBUTING.md).

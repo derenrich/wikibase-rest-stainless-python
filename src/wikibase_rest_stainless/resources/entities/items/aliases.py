@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-from typing import List, Iterable
+from typing import Iterable
 
 import httpx
 
-from ...._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from ...._utils import (
-    maybe_transform,
-    async_maybe_transform,
-)
+from ...._types import Body, Omit, Query, Headers, NotGiven, SequenceNotStr, omit, not_given
+from ...._utils import is_given, path_template, maybe_transform, strip_not_given, async_maybe_transform
 from ...._compat import cached_property
 from ...._resource import SyncAPIResource, AsyncAPIResource
 from ...._response import (
@@ -19,29 +16,37 @@ from ...._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from ...._base_client import (
-    make_request_options,
-)
-from ....types.entities.items import (
-    AliasListResponse,
-    AliasCreateResponse,
-    AliasUpdateResponse,
-    AliasRetrieveResponse,
-    alias_create_params,
-    alias_update_params,
-)
+from ...._base_client import make_request_options
+from ....types.entities.items import alias_create_params, alias_update_params
+from ....types.entities.items.alias_list_response import AliasListResponse
+from ....types.entities.items.alias_create_response import AliasCreateResponse
+from ....types.entities.items.alias_update_response import AliasUpdateResponse
+from ....types.entities.items.alias_retrieve_response import AliasRetrieveResponse
 
-__all__ = ["Aliases", "AsyncAliases"]
+__all__ = ["AliasesResource", "AsyncAliasesResource"]
 
 
-class Aliases(SyncAPIResource):
-    @cached_property
-    def with_raw_response(self) -> AliasesWithRawResponse:
-        return AliasesWithRawResponse(self)
+class AliasesResource(SyncAPIResource):
+    """Wikibase Aliases"""
 
     @cached_property
-    def with_streaming_response(self) -> AliasesWithStreamingResponse:
-        return AliasesWithStreamingResponse(self)
+    def with_raw_response(self) -> AliasesResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return AliasesResourceWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> AliasesResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return AliasesResourceWithStreamingResponse(self)
 
     def create(
         self,
@@ -49,15 +54,19 @@ class Aliases(SyncAPIResource):
         *,
         item_id: str,
         aliases: Iterable[object],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AliasCreateResponse:
         """
         Create / Add an Item's aliases in a specific language
@@ -75,8 +84,21 @@ class Aliases(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._post(
-            f"/entities/items/{item_id}/aliases/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/aliases/{language_code}", item_id=item_id, language_code=language_code
+            ),
             body=maybe_transform(
                 {
                     "aliases": aliases,
@@ -97,12 +119,16 @@ class Aliases(SyncAPIResource):
         language_code: str,
         *,
         item_id: str,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AliasRetrieveResponse:
         """
         Retrieve an Item's aliases in a specific language
@@ -120,8 +146,21 @@ class Aliases(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
-            f"/entities/items/{item_id}/aliases/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/aliases/{language_code}", item_id=item_id, language_code=language_code
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -133,15 +172,18 @@ class Aliases(SyncAPIResource):
         item_id: str,
         *,
         patch: Iterable[alias_update_params.Patch],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AliasUpdateResponse:
         """
         Change an Item's aliases
@@ -159,8 +201,18 @@ class Aliases(SyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._patch(
-            f"/entities/items/{item_id}/aliases",
+            path_template("/entities/items/{item_id}/aliases", item_id=item_id),
             body=maybe_transform(
                 {
                     "patch": patch,
@@ -180,12 +232,16 @@ class Aliases(SyncAPIResource):
         self,
         item_id: str,
         *,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AliasListResponse:
         """
         Retrieve an Item's aliases
@@ -201,8 +257,19 @@ class Aliases(SyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return self._get(
-            f"/entities/items/{item_id}/aliases",
+            path_template("/entities/items/{item_id}/aliases", item_id=item_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -210,14 +277,27 @@ class Aliases(SyncAPIResource):
         )
 
 
-class AsyncAliases(AsyncAPIResource):
-    @cached_property
-    def with_raw_response(self) -> AsyncAliasesWithRawResponse:
-        return AsyncAliasesWithRawResponse(self)
+class AsyncAliasesResource(AsyncAPIResource):
+    """Wikibase Aliases"""
 
     @cached_property
-    def with_streaming_response(self) -> AsyncAliasesWithStreamingResponse:
-        return AsyncAliasesWithStreamingResponse(self)
+    def with_raw_response(self) -> AsyncAliasesResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncAliasesResourceWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> AsyncAliasesResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return AsyncAliasesResourceWithStreamingResponse(self)
 
     async def create(
         self,
@@ -225,15 +305,19 @@ class AsyncAliases(AsyncAPIResource):
         *,
         item_id: str,
         aliases: Iterable[object],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AliasCreateResponse:
         """
         Create / Add an Item's aliases in a specific language
@@ -251,8 +335,21 @@ class AsyncAliases(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._post(
-            f"/entities/items/{item_id}/aliases/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/aliases/{language_code}", item_id=item_id, language_code=language_code
+            ),
             body=await async_maybe_transform(
                 {
                     "aliases": aliases,
@@ -273,12 +370,16 @@ class AsyncAliases(AsyncAPIResource):
         language_code: str,
         *,
         item_id: str,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AliasRetrieveResponse:
         """
         Retrieve an Item's aliases in a specific language
@@ -296,8 +397,21 @@ class AsyncAliases(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
         if not language_code:
             raise ValueError(f"Expected a non-empty value for `language_code` but received {language_code!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
-            f"/entities/items/{item_id}/aliases/{language_code}",
+            path_template(
+                "/entities/items/{item_id}/aliases/{language_code}", item_id=item_id, language_code=language_code
+            ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -309,15 +423,18 @@ class AsyncAliases(AsyncAPIResource):
         item_id: str,
         *,
         patch: Iterable[alias_update_params.Patch],
-        bot: bool | NotGiven = NOT_GIVEN,
-        comment: str | NotGiven = NOT_GIVEN,
-        tags: List[str] | NotGiven = NOT_GIVEN,
+        bot: bool | Omit = omit,
+        comment: str | Omit = omit,
+        tags: SequenceNotStr[str] | Omit = omit,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AliasUpdateResponse:
         """
         Change an Item's aliases
@@ -335,8 +452,18 @@ class AsyncAliases(AsyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._patch(
-            f"/entities/items/{item_id}/aliases",
+            path_template("/entities/items/{item_id}/aliases", item_id=item_id),
             body=await async_maybe_transform(
                 {
                     "patch": patch,
@@ -356,12 +483,16 @@ class AsyncAliases(AsyncAPIResource):
         self,
         item_id: str,
         *,
+        if_match: SequenceNotStr[str] | Omit = omit,
+        if_modified_since: str | Omit = omit,
+        if_none_match: SequenceNotStr[str] | Omit = omit,
+        if_unmodified_since: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AliasListResponse:
         """
         Retrieve an Item's aliases
@@ -377,8 +508,19 @@ class AsyncAliases(AsyncAPIResource):
         """
         if not item_id:
             raise ValueError(f"Expected a non-empty value for `item_id` but received {item_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "If-Match": ",".join(if_match) if is_given(if_match) else not_given,
+                    "If-Modified-Since": if_modified_since,
+                    "If-None-Match": ",".join(if_none_match) if is_given(if_none_match) else not_given,
+                    "If-Unmodified-Since": if_unmodified_since,
+                }
+            ),
+            **(extra_headers or {}),
+        }
         return await self._get(
-            f"/entities/items/{item_id}/aliases",
+            path_template("/entities/items/{item_id}/aliases", item_id=item_id),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -386,8 +528,8 @@ class AsyncAliases(AsyncAPIResource):
         )
 
 
-class AliasesWithRawResponse:
-    def __init__(self, aliases: Aliases) -> None:
+class AliasesResourceWithRawResponse:
+    def __init__(self, aliases: AliasesResource) -> None:
         self._aliases = aliases
 
         self.create = to_raw_response_wrapper(
@@ -404,8 +546,8 @@ class AliasesWithRawResponse:
         )
 
 
-class AsyncAliasesWithRawResponse:
-    def __init__(self, aliases: AsyncAliases) -> None:
+class AsyncAliasesResourceWithRawResponse:
+    def __init__(self, aliases: AsyncAliasesResource) -> None:
         self._aliases = aliases
 
         self.create = async_to_raw_response_wrapper(
@@ -422,8 +564,8 @@ class AsyncAliasesWithRawResponse:
         )
 
 
-class AliasesWithStreamingResponse:
-    def __init__(self, aliases: Aliases) -> None:
+class AliasesResourceWithStreamingResponse:
+    def __init__(self, aliases: AliasesResource) -> None:
         self._aliases = aliases
 
         self.create = to_streamed_response_wrapper(
@@ -440,8 +582,8 @@ class AliasesWithStreamingResponse:
         )
 
 
-class AsyncAliasesWithStreamingResponse:
-    def __init__(self, aliases: AsyncAliases) -> None:
+class AsyncAliasesResourceWithStreamingResponse:
+    def __init__(self, aliases: AsyncAliasesResource) -> None:
         self._aliases = aliases
 
         self.create = async_to_streamed_response_wrapper(

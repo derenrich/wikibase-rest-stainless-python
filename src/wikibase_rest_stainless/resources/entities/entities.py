@@ -2,113 +2,145 @@
 
 from __future__ import annotations
 
-from .items import (
-    Items,
-    AsyncItems,
-    ItemsWithRawResponse,
-    AsyncItemsWithRawResponse,
-    ItemsWithStreamingResponse,
-    AsyncItemsWithStreamingResponse,
-)
 from ..._compat import cached_property
-from .properties import (
-    Properties,
-    AsyncProperties,
-    PropertiesWithRawResponse,
-    AsyncPropertiesWithRawResponse,
-    PropertiesWithStreamingResponse,
-    AsyncPropertiesWithStreamingResponse,
-)
 from ..._resource import SyncAPIResource, AsyncAPIResource
-from .items.items import Items, AsyncItems
-from .properties.properties import Properties, AsyncProperties
+from .items.items import (
+    ItemsResource,
+    AsyncItemsResource,
+    ItemsResourceWithRawResponse,
+    AsyncItemsResourceWithRawResponse,
+    ItemsResourceWithStreamingResponse,
+    AsyncItemsResourceWithStreamingResponse,
+)
+from .properties.properties import (
+    PropertiesResource,
+    AsyncPropertiesResource,
+    PropertiesResourceWithRawResponse,
+    AsyncPropertiesResourceWithRawResponse,
+    PropertiesResourceWithStreamingResponse,
+    AsyncPropertiesResourceWithStreamingResponse,
+)
 
-__all__ = ["Entities", "AsyncEntities"]
+__all__ = ["EntitiesResource", "AsyncEntitiesResource"]
 
 
-class Entities(SyncAPIResource):
+class EntitiesResource(SyncAPIResource):
     @cached_property
-    def items(self) -> Items:
-        return Items(self._client)
-
-    @cached_property
-    def properties(self) -> Properties:
-        return Properties(self._client)
-
-    @cached_property
-    def with_raw_response(self) -> EntitiesWithRawResponse:
-        return EntitiesWithRawResponse(self)
-
-    @cached_property
-    def with_streaming_response(self) -> EntitiesWithStreamingResponse:
-        return EntitiesWithStreamingResponse(self)
-
-
-class AsyncEntities(AsyncAPIResource):
-    @cached_property
-    def items(self) -> AsyncItems:
-        return AsyncItems(self._client)
+    def items(self) -> ItemsResource:
+        """Wikibase Items"""
+        return ItemsResource(self._client)
 
     @cached_property
-    def properties(self) -> AsyncProperties:
-        return AsyncProperties(self._client)
+    def properties(self) -> PropertiesResource:
+        """Wikibase Properties"""
+        return PropertiesResource(self._client)
 
     @cached_property
-    def with_raw_response(self) -> AsyncEntitiesWithRawResponse:
-        return AsyncEntitiesWithRawResponse(self)
+    def with_raw_response(self) -> EntitiesResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return EntitiesResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> AsyncEntitiesWithStreamingResponse:
-        return AsyncEntitiesWithStreamingResponse(self)
+    def with_streaming_response(self) -> EntitiesResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return EntitiesResourceWithStreamingResponse(self)
 
 
-class EntitiesWithRawResponse:
-    def __init__(self, entities: Entities) -> None:
+class AsyncEntitiesResource(AsyncAPIResource):
+    @cached_property
+    def items(self) -> AsyncItemsResource:
+        """Wikibase Items"""
+        return AsyncItemsResource(self._client)
+
+    @cached_property
+    def properties(self) -> AsyncPropertiesResource:
+        """Wikibase Properties"""
+        return AsyncPropertiesResource(self._client)
+
+    @cached_property
+    def with_raw_response(self) -> AsyncEntitiesResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncEntitiesResourceWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> AsyncEntitiesResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/derenrich/wikibase-rest-stainless-python#with_streaming_response
+        """
+        return AsyncEntitiesResourceWithStreamingResponse(self)
+
+
+class EntitiesResourceWithRawResponse:
+    def __init__(self, entities: EntitiesResource) -> None:
         self._entities = entities
 
     @cached_property
-    def items(self) -> ItemsWithRawResponse:
-        return ItemsWithRawResponse(self._entities.items)
+    def items(self) -> ItemsResourceWithRawResponse:
+        """Wikibase Items"""
+        return ItemsResourceWithRawResponse(self._entities.items)
 
     @cached_property
-    def properties(self) -> PropertiesWithRawResponse:
-        return PropertiesWithRawResponse(self._entities.properties)
+    def properties(self) -> PropertiesResourceWithRawResponse:
+        """Wikibase Properties"""
+        return PropertiesResourceWithRawResponse(self._entities.properties)
 
 
-class AsyncEntitiesWithRawResponse:
-    def __init__(self, entities: AsyncEntities) -> None:
+class AsyncEntitiesResourceWithRawResponse:
+    def __init__(self, entities: AsyncEntitiesResource) -> None:
         self._entities = entities
 
     @cached_property
-    def items(self) -> AsyncItemsWithRawResponse:
-        return AsyncItemsWithRawResponse(self._entities.items)
+    def items(self) -> AsyncItemsResourceWithRawResponse:
+        """Wikibase Items"""
+        return AsyncItemsResourceWithRawResponse(self._entities.items)
 
     @cached_property
-    def properties(self) -> AsyncPropertiesWithRawResponse:
-        return AsyncPropertiesWithRawResponse(self._entities.properties)
+    def properties(self) -> AsyncPropertiesResourceWithRawResponse:
+        """Wikibase Properties"""
+        return AsyncPropertiesResourceWithRawResponse(self._entities.properties)
 
 
-class EntitiesWithStreamingResponse:
-    def __init__(self, entities: Entities) -> None:
+class EntitiesResourceWithStreamingResponse:
+    def __init__(self, entities: EntitiesResource) -> None:
         self._entities = entities
 
     @cached_property
-    def items(self) -> ItemsWithStreamingResponse:
-        return ItemsWithStreamingResponse(self._entities.items)
+    def items(self) -> ItemsResourceWithStreamingResponse:
+        """Wikibase Items"""
+        return ItemsResourceWithStreamingResponse(self._entities.items)
 
     @cached_property
-    def properties(self) -> PropertiesWithStreamingResponse:
-        return PropertiesWithStreamingResponse(self._entities.properties)
+    def properties(self) -> PropertiesResourceWithStreamingResponse:
+        """Wikibase Properties"""
+        return PropertiesResourceWithStreamingResponse(self._entities.properties)
 
 
-class AsyncEntitiesWithStreamingResponse:
-    def __init__(self, entities: AsyncEntities) -> None:
+class AsyncEntitiesResourceWithStreamingResponse:
+    def __init__(self, entities: AsyncEntitiesResource) -> None:
         self._entities = entities
 
     @cached_property
-    def items(self) -> AsyncItemsWithStreamingResponse:
-        return AsyncItemsWithStreamingResponse(self._entities.items)
+    def items(self) -> AsyncItemsResourceWithStreamingResponse:
+        """Wikibase Items"""
+        return AsyncItemsResourceWithStreamingResponse(self._entities.items)
 
     @cached_property
-    def properties(self) -> AsyncPropertiesWithStreamingResponse:
-        return AsyncPropertiesWithStreamingResponse(self._entities.properties)
+    def properties(self) -> AsyncPropertiesResourceWithStreamingResponse:
+        """Wikibase Properties"""
+        return AsyncPropertiesResourceWithStreamingResponse(self._entities.properties)

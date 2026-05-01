@@ -1,11 +1,36 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 from typing import Dict, List
-from typing_extensions import Literal
+from typing_extensions import Literal, TypeAlias
 
 from ...._models import BaseModel
 
-__all__ = ["StatementListResponse", "StatementListResponseItem"]
+__all__ = [
+    "StatementListResponse",
+    "StatementListResponseItem",
+    "StatementListResponseItemQualifier",
+    "StatementListResponseItemReference",
+    "StatementListResponseItemReferencePart",
+]
+
+
+class StatementListResponseItemQualifier(BaseModel):
+    property: object
+
+    value: object
+
+
+class StatementListResponseItemReferencePart(BaseModel):
+    property: object
+
+    value: object
+
+
+class StatementListResponseItemReference(BaseModel):
+    hash: str
+    """Hash of the Reference"""
+
+    parts: List[StatementListResponseItemReferencePart]
 
 
 class StatementListResponseItem(BaseModel):
@@ -14,14 +39,14 @@ class StatementListResponseItem(BaseModel):
 
     property: object
 
-    qualifiers: object
+    qualifiers: List[StatementListResponseItemQualifier]
 
     rank: Literal["deprecated", "normal", "preferred"]
     """The rank of the Statement"""
 
-    references: object
+    references: List[StatementListResponseItemReference]
 
     value: object
 
 
-StatementListResponse = Dict[str, List[StatementListResponseItem]]
+StatementListResponse: TypeAlias = Dict[str, List[StatementListResponseItem]]

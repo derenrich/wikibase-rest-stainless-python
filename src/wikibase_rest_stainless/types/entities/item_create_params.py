@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Iterable
+from typing import Dict, Iterable
 from typing_extensions import Literal, Required, TypedDict
+
+from ..._types import SequenceNotStr
 
 __all__ = [
     "ItemCreateParams",
@@ -29,11 +31,11 @@ class ItemCreateParams(TypedDict, total=False):
 
     comment: str
 
-    tags: List[str]
+    tags: SequenceNotStr[str]
 
 
 class ItemSitelinks(TypedDict, total=False):
-    badges: List[str]
+    badges: SequenceNotStr[str]
 
     title: str
 
@@ -109,7 +111,7 @@ class ItemStatement(TypedDict, total=False):
 
 
 class Item(TypedDict, total=False):
-    aliases: Dict[str, List[str]]
+    aliases: Dict[str, SequenceNotStr[str]]
 
     descriptions: Dict[str, str]
 
